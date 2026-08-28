@@ -1,5 +1,7 @@
 import StatCard from "../components/StatCard";
 import ThreatTable from "../components/ThreatTable";
+import ThreatOverview from "../components/ThreatOverview";
+import APIInventory from "../components/APIInventory";
 
 function Dashboard() {
   return (
@@ -24,7 +26,7 @@ function Dashboard() {
 
         <StatCard
           title="Shadow APIs"
-          value="0"
+          value="1"
           description="Undocumented APIs detected"
         />
 
@@ -35,7 +37,11 @@ function Dashboard() {
         />
       </section>
 
+      <ThreatOverview />
+
       <ThreatTable />
+
+      <APIInventory />
     </div>
   );
 }
