@@ -1,16 +1,4 @@
-* {
-  box-sizing: border-box;
-}
-
-html {
-  background: #080b10;
-}
-
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-  background: #080b10;
+:root {
   font-family:
     Inter,
     ui-sans-serif,
@@ -19,6 +7,30 @@ body {
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
+
+  color: #edf3fa;
+  background: #05080c;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  min-width: 320px;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  overflow: hidden;
+  background: #05080c;
 }
 
 button,
@@ -28,6 +40,11 @@ select {
   font: inherit;
 }
 
-a {
-  color: inherit;
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: rgba(59, 130, 246, 0.28);
+  color: #ffffff;
 }
