@@ -26,6 +26,14 @@ class RequestRateLimiter:
         self._log: dict[str, deque] = defaultdict(deque)
 
     def check(self, user_id: str, endpoint: str) -> RateLimitDecision:
+        """
+        Decide whether this request should be allowed.
+
+        Looks up this user+endpoint's recent request history, drops any
+        timestamps older than `window_seconds`, then checks whether the
+        remaining count has hit `max_requests`. If so, blocks the request.
+        Otherwise records this request and allows it.
+        """
         now = time.time()
         key = f"{user_id}:{endpoint}"
         window = self._log[key]
