@@ -26,5 +26,26 @@ class RequestRateLimiter:
         self._log: dict[str, deque] = defaultdict(deque)
 
     def check(self, user_id: str, endpoint: str) -> RateLimitDecision:
-        # logic comes in the next commit
-        pass
+        now = time.time()
+        key = f"{user_id}:{endpoint}"
+        window = self._log[key]
+
+        # Step 1: remove timestamps older than our window
+        while window and now - window[0] > self.window_seconds:
+            window.popleft()
+
+        # Step 2: check if we're already at the limit
+        if len(window) >= self.max_requests:
+            return RateLimitDecision(
+                allowed=False,
+                reason=f"Rate limit exceeded: {len(window)}/{self.max_requests} requests in {self.window_seconds}s",
+                remaining=0,
+            )
+
+        # Step 3: record this request and allow it
+        window.append(now)
+        return RateLimitDecision(
+            allowed=True,
+            reason="within limit",
+            remaining=self.max_requests - len(window),
+        )
