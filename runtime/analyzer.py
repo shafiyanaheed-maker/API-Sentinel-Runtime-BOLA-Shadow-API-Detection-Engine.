@@ -49,3 +49,5 @@ def analyze_request(request: APIRequest) -> AnalysisResult:
         threats=threats,
         severity=severity,
     )
+
+# Runtime analyzer is ready for BOLA and BFLA detection.
