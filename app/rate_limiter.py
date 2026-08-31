@@ -57,3 +57,20 @@ class RequestRateLimiter:
             reason="within limit",
             remaining=self.max_requests - len(window),
         )
+        
+class BusinessFlowLimiter:
+    """
+    Flags object-scanning behaviour: too many DISTINCT object IDs touched
+    by the same user on the same endpoint pattern within a time window.
+    Catches a BOLA attacker who scans slowly enough to dodge the volume
+    limiter above.
+    """
+
+    def __init__(self, max_distinct_objects: int = 5, window_seconds: int = 30):
+        self.max_distinct_objects = max_distinct_objects
+        self.window_seconds = window_seconds
+        self._log: dict[str, deque] = defaultdict(deque)
+
+    def check(self, user_id: str, endpoint_pattern: str, object_id: str) -> RateLimitDecision:
+        # logic comes in the next commit
+        pass
