@@ -13,7 +13,8 @@ pip install -r requirements.txt
 
 - [x] Sliding-window rate limiter (`app/rate_limiter.py`) — limits requests
       per user per endpoint within a time window. Tested in `tests/test_rate_limiter.py`.
-- [ ] Business-flow limiter (object-scan detection)
+- [x] Business-flow limiter (object-scan detection) — counts distinct object
+      IDs per user per endpoint pattern. Tested in `tests/test_rate_limiter.py`.
 - [ ] Authorization enforcement (BOLA/BFLA)
 - [ ] Blocking middleware
 - [ ] Attack simulation scripts
