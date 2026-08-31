@@ -72,5 +72,32 @@ class BusinessFlowLimiter:
         self._log: dict[str, deque] = defaultdict(deque)
 
     def check(self, user_id: str, endpoint_pattern: str, object_id: str) -> RateLimitDecision:
-        # logic comes in the next commit
-        pass
+        now = time.time()
+        key = f"{user_id}:{endpoint_pattern}"
+        window = self._log[key]
+
+        # Step 1: drop entries older than our window
+        while window and now - window[0][0] > self.window_seconds:
+            window.popleft()
+
+        # Step 2: count distinct object IDs, including this new one
+        distinct_ids = {oid for _, oid in window}
+        distinct_ids.add(object_id)
+
+        # Step 3: block if that's too many distinct objects
+        if len(distinct_ids) > self.max_distinct_objects:
+            return RateLimitDecision(
+                allowed=False,
+                reason=f"Object-scan pattern detected: {len(distinct_ids)} distinct objects "
+                       f"on {endpoint_pattern} in {self.window_seconds}s "
+                       f"(limit {self.max_distinct_objects})",
+                remaining=0,
+            )
+
+        # Step 4: record this request and allow it
+        window.append((now, object_id))
+        return RateLimitDecision(
+            allowed=True,
+            reason="within business-flow limit",
+            remaining=self.max_distinct_objects - len(distinct_ids),
+        )
