@@ -15,7 +15,9 @@ pip install -r requirements.txt
       per user per endpoint within a time window. Tested in `tests/test_rate_limiter.py`.
 - [x] Business-flow limiter (object-scan detection) — counts distinct object
       IDs per user per endpoint pattern. Tested in `tests/test_rate_limiter.py`.
-- [ ] Authorization enforcement (BOLA/BFLA)
+- [x] Object-level authorization (BOLA) — checks object ownership against
+      the requesting user. Tested in `tests/test_authorization.py`.
+      Function-level (BFLA) still to come.
 - [ ] Blocking middleware
 - [ ] Attack simulation scripts
 - [ ] Detection-accuracy validation
