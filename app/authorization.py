@@ -36,5 +36,28 @@ class AuthorizationEnforcer:
         self.ownership_map = ownership_map or MOCK_ORDER_OWNERSHIP
 
     def check_object_level(self, user_id: str, object_id: str) -> AuthDecision:
-        # logic comes in the next commit
-        pass
+        owner = self.ownership_map.get(object_id)
+
+        if owner is None:
+            # The object doesn't exist in our records at all - that's a
+            # "not found" situation, not an authorization violation, so
+            # we let it through and let a 404 handler deal with it later.
+            return AuthDecision(
+                allowed=True,
+                violation_type=None,
+                reason="object not found (not an authorization decision)",
+            )
+
+        if owner != user_id:
+            return AuthDecision(
+                allowed=False,
+                violation_type="BOLA",
+                reason=f"user '{user_id}' attempted to access object '{object_id}' "
+                       f"owned by '{owner}'",
+            )
+
+        return AuthDecision(
+            allowed=True,
+            violation_type=None,
+            reason="owner match",
+        )
