@@ -12,7 +12,12 @@ independently, without waiting on the backend.
 
 from __future__ import annotations
 from dataclasses import dataclass
+from enum import Enum
 
+
+class Role(str, Enum):
+    USER = "user"
+    ADMIN = "admin"
 
 @dataclass
 class AuthDecision:
@@ -30,10 +35,20 @@ MOCK_ORDER_OWNERSHIP = {
     "1005": "user_c",
 }
 
+# Mock data: endpoint pattern -> set of roles allowed to call it
+MOCK_ENDPOINT_ROLES = {
+    "/api/orders/{id}": {Role.USER, Role.ADMIN},
+    "/api/admin/users": {Role.ADMIN},
+    "/api/admin/refund": {Role.ADMIN},
+    "/api/products": {Role.USER, Role.ADMIN},
+}
 
 class AuthorizationEnforcer:
-    def __init__(self, ownership_map: dict[str, str] | None = None):
+    def __init__(self,
+                 ownership_map: dict[str, str] | None = None,
+                 role_map: dict[str, set[Role]] | None = None):
         self.ownership_map = ownership_map or MOCK_ORDER_OWNERSHIP
+        self.role_map = role_map or MOCK_ENDPOINT_ROLES
 
     def check_object_level(self, user_id: str, object_id: str) -> AuthDecision:
         owner = self.ownership_map.get(object_id)
@@ -61,3 +76,7 @@ class AuthorizationEnforcer:
             violation_type=None,
             reason="owner match",
         )
+        
+    def check_function_level(self, role: Role, endpoint_pattern: str) -> AuthDecision:
+        # logic comes in the next commit
+        pass
