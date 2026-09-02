@@ -78,5 +78,30 @@ class AuthorizationEnforcer:
         )
         
     def check_function_level(self, role: Role, endpoint_pattern: str) -> AuthDecision:
-        # logic comes in the next commit
-        pass
+        allowed_roles = self.role_map.get(endpoint_pattern)
+
+        if allowed_roles is None:
+            # Endpoint has no registered policy at all - fail CLOSED
+            # (default-deny), not open. Better to accidentally block a
+            # legit endpoint we forgot to register than to accidentally
+            # allow one we never meant to expose.
+            return AuthDecision(
+                allowed=False,
+                violation_type="BFLA",
+                reason=f"endpoint '{endpoint_pattern}' has no registered role "
+                       f"policy (default-deny)",
+            )
+
+        if role not in allowed_roles:
+            return AuthDecision(
+                allowed=False,
+                violation_type="BFLA",
+                reason=f"role '{role}' is not permitted on '{endpoint_pattern}' "
+                       f"(requires one of {sorted(r.value for r in allowed_roles)})",
+            )
+
+        return AuthDecision(
+            allowed=True,
+            violation_type=None,
+            reason="role permitted",
+        )
