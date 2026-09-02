@@ -1,243 +1,267 @@
-/* API-Sentinel theme overrides */
+/* =========================================================
+   API-SENTINEL THEME SYSTEM
+   ========================================================= */
 
 :root {
   color-scheme: dark;
 
-  --theme-bg: #05080c;
-  --theme-surface: #080b10;
-  --theme-surface-soft: #0d1219;
-  --theme-border: rgba(148, 163, 184, 0.12);
-  --theme-text: #e8edf5;
-  --theme-text-secondary: #a9b8ca;
-  --theme-text-muted: #667487;
+  --theme-bg: #03070d;
+  --theme-surface: #08111d;
+  --theme-surface-soft: #0d1928;
+
+  --theme-border: rgba(116, 151, 194, 0.14);
+
+  --theme-text: #f4f7fb;
+  --theme-text-secondary: #8ea4bd;
+  --theme-text-muted: #667b95;
+
+  --theme-blue: #3f8cff;
+  --theme-green: #20e6a0;
+  --theme-red: #ff5268;
+  --theme-purple: #a96cff;
+  --theme-orange: #ff9f43;
 }
 
-/* LIGHT MODE */
+
+/* =========================================================
+   LIGHT MODE
+   ========================================================= */
 
 :root[data-theme="light"] {
   color-scheme: light;
 
-  --theme-bg: #f4f7fb;
+  --theme-bg: #f5f8fc;
   --theme-surface: #ffffff;
-  --theme-surface-soft: #eef3f8;
-  --theme-border: rgba(15, 23, 42, 0.12);
-  --theme-text: #172033;
-  --theme-text-secondary: #475569;
-  --theme-text-muted: #64748b;
+  --theme-surface-soft: #eef4fa;
+
+  --theme-border: rgba(44, 87, 132, 0.11);
+
+  --theme-text: #172d49;
+  --theme-text-secondary: #5b718b;
+  --theme-text-muted: #7d90a5;
+
+  --theme-blue: #2478f5;
+  --theme-green: #08ad76;
+  --theme-red: #e8435b;
+  --theme-purple: #8b4fe5;
+  --theme-orange: #ec851f;
 }
 
-/* Main page */
 
-:root[data-theme="light"] body {
+/* =========================================================
+   GLOBAL
+   ========================================================= */
+
+html {
+  background: var(--theme-bg);
+}
+
+body {
+  margin: 0;
+
+  background: var(--theme-bg);
+  color: var(--theme-text);
+
+  transition:
+    background-color 220ms ease,
+    color 220ms ease;
+}
+
+#root {
+  min-height: 100vh;
+
   background: var(--theme-bg);
   color: var(--theme-text);
 }
 
-:root[data-theme="light"] #root {
-  background: var(--theme-bg);
-}
 
-/* Application shell */
-
-:root[data-theme="light"] .app-shell {
-  background: var(--theme-bg);
-  color: var(--theme-text);
-}
-
-/* Sidebar */
-
-:root[data-theme="light"] .sidebar {
-  background: #ffffff;
-  border-right-color: var(--theme-border);
-}
-
-:root[data-theme="light"] .brand-name,
-:root[data-theme="light"] .brand-subtitle {
-  color: var(--theme-text);
-}
-
-:root[data-theme="light"] .nav-section-title {
-  color: var(--theme-text-muted);
-}
-
-:root[data-theme="light"] .nav-link {
-  color: var(--theme-text-secondary);
-}
-
-:root[data-theme="light"] .nav-link:hover {
-  background: #eef3f8;
-  color: #172033;
-}
-
-:root[data-theme="light"] .nav-link.active {
-  background: rgba(59, 130, 246, 0.10);
-  color: #2563eb;
-}
-
-:root[data-theme="light"] .environment {
-  background: #f1f5f9;
-  border-color: var(--theme-border);
-  color: var(--theme-text-secondary);
-}
-
-:root[data-theme="light"] .quick-action {
-  background: #f1f5f9;
-  border-color: var(--theme-border);
-}
-
-:root[data-theme="light"] .bottom-link,
-:root[data-theme="light"] .version {
-  color: var(--theme-text-muted);
-}
-
-:root[data-theme="light"] .sidebar-footer {
-  border-top-color: var(--theme-border);
-}
-
-/* Main content */
-
-:root[data-theme="light"] .main-content {
-  background: var(--theme-bg);
-  color: var(--theme-text);
-}
-
-/* Dashboard */
-
-:root[data-theme="light"] .dashboard {
-  color: var(--theme-text);
-}
-
-/* Stat cards */
-
-:root[data-theme="light"] .stat-card {
-  background: var(--theme-surface);
-  border-color: var(--theme-border);
-  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
-}
-
-:root[data-theme="light"] .stat-value {
-  color: #172033;
-}
-
-/* Sections */
-
-:root[data-theme="light"] .api-inventory,
-:root[data-theme="light"] .threat-overview,
-:root[data-theme="light"] .threat-table {
-  background: var(--theme-surface);
-  border-color: var(--theme-border);
-  color: var(--theme-text);
-}
-
-:root[data-theme="light"] .section-heading {
-  color: var(--theme-text);
-}
-
-:root[data-theme="light"] .section-heading p {
-  color: var(--theme-text-secondary);
-}
-
-:root[data-theme="light"] .inventory-count {
-  color: var(--theme-text-muted);
-}
-
-/* API inventory */
-
-:root[data-theme="light"] .inventory-table-wrapper {
-  border-color: var(--theme-border);
-}
-
-:root[data-theme="light"] .api-inventory table {
-  background: #ffffff;
-}
-
-:root[data-theme="light"] .api-inventory th {
-  background: #f1f5f9;
-  color: var(--theme-text-muted);
-  border-bottom-color: var(--theme-border);
-}
-
-:root[data-theme="light"] .api-inventory td {
-  color: var(--theme-text-secondary);
-  border-bottom-color: var(--theme-border);
-}
-
-:root[data-theme="light"] .api-endpoint {
-  color: #172033;
-}
-
-/* Threat overview */
-
-:root[data-theme="light"] .threat-bar-item {
-  color: var(--theme-text);
-}
-
-:root[data-theme="light"] .threat-bar-header {
-  color: var(--theme-text-secondary);
-}
-
-:root[data-theme="light"] .threat-bar-value {
-  color: #172033;
-}
-
-:root[data-theme="light"] .threat-bar-track {
-  background: #e2e8f0;
-}
-
-/* Threat table */
-
-:root[data-theme="light"] .threat-table table {
-  background: #ffffff;
-}
-
-:root[data-theme="light"] .threat-table th {
-  background: #f1f5f9;
-  color: var(--theme-text-muted);
-  border-bottom-color: var(--theme-border);
-}
-
-:root[data-theme="light"] .threat-table td {
-  color: var(--theme-text-secondary);
-  border-bottom-color: var(--theme-border);
-}
-
-/* Theme toggle */
+/* =========================================================
+   THEME TOGGLE
+   ========================================================= */
 
 .theme-toggle {
+  position: fixed !important;
+
+  top: 18px !important;
+  right: 22px !important;
+
+  z-index: 99999 !important;
+
+  min-width: 92px;
+  height: 40px;
+
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  padding: 0 13px;
+
+  border:
+    1px solid rgba(110, 146, 188, 0.25) !important;
+
+  border-radius: 9px;
+
+  background:
+    rgba(7, 15, 25, 0.90) !important;
+
+  color: #eaf2fc !important;
+
+  backdrop-filter: blur(14px);
+
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.20);
+
+  cursor: pointer;
+
+  font-size: 11px;
+  font-weight: 800;
+
   transition:
-    background 180ms ease,
-    color 180ms ease,
+    background-color 180ms ease,
     border-color 180ms ease,
-    box-shadow 180ms ease;
+    color 180ms ease,
+    transform 180ms ease;
 }
 
+.theme-toggle:hover {
+  transform: translateY(-1px);
+
+  border-color:
+    rgba(63, 140, 255, 0.50) !important;
+
+  box-shadow:
+    0 10px 28px rgba(36, 120, 245, 0.15);
+}
+
+.theme-toggle svg {
+  color: var(--theme-blue);
+}
+
+
+/* =========================================================
+   LIGHT THEME TOGGLE
+   ========================================================= */
+
 :root[data-theme="light"] .theme-toggle {
-  background: #ffffff;
-  color: #172033;
-  border-color: rgba(15, 23, 42, 0.14);
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+  background:
+    rgba(255, 255, 255, 0.94) !important;
+
+  color: #263e5b !important;
+
+  border-color:
+    rgba(44, 87, 132, 0.15) !important;
+
+  box-shadow:
+    0 8px 25px rgba(43, 80, 117, 0.10);
 }
 
 :root[data-theme="light"] .theme-toggle:hover {
-  background: #eef3f8;
+  background: #ffffff !important;
+
+  border-color:
+    rgba(37, 120, 245, 0.30) !important;
 }
 
-/* Smooth theme transition */
 
-body,
+/* =========================================================
+   DASHBOARD THEME
+   ========================================================= */
+
 .app-shell,
-.sidebar,
 .main-content,
+.dashboard {
+  background: var(--theme-bg);
+  color: var(--theme-text);
+}
+
+.sidebar {
+  background: var(--theme-surface);
+  border-right-color: var(--theme-border);
+}
+
 .stat-card,
 .api-inventory,
 .threat-overview,
 .threat-table,
-.inventory-table-wrapper,
 .quick-action,
 .environment {
+  background: var(--theme-surface);
+  border-color: var(--theme-border);
+  color: var(--theme-text);
+}
+
+.brand-name,
+.stat-value,
+.section-heading,
+.api-endpoint {
+  color: var(--theme-text);
+}
+
+.brand-subtitle,
+.stat-label,
+.section-heading p,
+.inventory-count {
+  color: var(--theme-text-secondary);
+}
+
+.nav-link {
+  color: var(--theme-text-secondary);
+}
+
+.nav-link:hover {
+  color: var(--theme-text);
+  background: var(--theme-surface-soft);
+}
+
+.nav-link.active {
+  color: var(--theme-blue);
+  background: rgba(63, 140, 255, 0.08);
+}
+
+
+/* =========================================================
+   LIGHT DASHBOARD
+   ========================================================= */
+
+:root[data-theme="light"] .sidebar {
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff,
+      #f7faff
+    );
+
+  box-shadow:
+    4px 0 20px rgba(43, 80, 117, 0.04);
+}
+
+:root[data-theme="light"] .stat-card,
+:root[data-theme="light"] .api-inventory,
+:root[data-theme="light"] .threat-overview,
+:root[data-theme="light"] .threat-table {
+  box-shadow:
+    0 7px 25px rgba(43, 80, 117, 0.06);
+}
+
+
+/* =========================================================
+   THEME TRANSITIONS
+   ========================================================= */
+
+.landing-page,
+.landing-nav,
+.landing-signin,
+.landing-status,
+.landing-secondary,
+.visual-core,
+.threat-card,
+.request-stream,
+.capability {
   transition:
-    background-color 180ms ease,
-    color 180ms ease,
-    border-color 180ms ease,
-    box-shadow 180ms ease;
-} 
+    background-color 220ms ease,
+    border-color 220ms ease,
+    color 220ms ease,
+    box-shadow 220ms ease;
+}
