@@ -17,22 +17,55 @@ const navigation = [
   {
     section: "OVERVIEW",
     items: [
-      { label: "Dashboard", icon: LayoutDashboard, active: true },
-      { label: "API Monitor", icon: Activity },
+      {
+        label: "Dashboard",
+        icon: LayoutDashboard,
+        path: "/dashboard",
+      },
+      {
+        label: "API Monitor",
+        icon: Activity,
+        path: "/api-monitor",
+      },
     ],
   },
   {
     section: "DETECTION",
     items: [
-      { label: "BOLA Detection", icon: LockKeyhole },
-      { label: "BFLA Detection", icon: ShieldCheck },
-      { label: "Shadow APIs", icon: Box },
-      { label: "Threat Center", icon: AlertTriangle },
+      {
+        label: "BOLA Detection",
+        icon: LockKeyhole,
+        path: "/bola-detection",
+      },
+      {
+        label: "BFLA Detection",
+        icon: ShieldCheck,
+        path: "/bfla-detection",
+      },
+      {
+        label: "Shadow APIs",
+        icon: Box,
+        path: "/shadow-apis",
+      },
+      {
+        label: "Threat Center",
+        icon: AlertTriangle,
+        path: "/threat-center",
+      },
     ],
   },
 ];
 
-function Sidebar() {
+function Sidebar({ currentPath, onNavigate }) {
+  function handleNavigation(event, path) {
+    event.preventDefault();
+    onNavigate(path);
+  }
+
+  function isActive(path) {
+    return currentPath === path;
+  }
+
   return (
     <aside className="sidebar">
       <div className="sidebar-brand">
@@ -44,6 +77,7 @@ function Sidebar() {
           <div className="brand-name">
             API<span>-</span>Sentinel
           </div>
+
           <div className="brand-subtitle">RUNTIME SECURITY</div>
         </div>
       </div>
@@ -60,17 +94,20 @@ function Sidebar() {
 
             {group.items.map((item) => {
               const Icon = item.icon;
+              const active = isActive(item.path);
 
               return (
                 <a
-                  href="#"
+                  href={item.path}
                   key={item.label}
-                  className={`nav-link ${item.active ? "active" : ""}`}
+                  className={`nav-link ${active ? "active" : ""}`}
+                  onClick={(event) => handleNavigation(event, item.path)}
                 >
                   <Icon size={18} strokeWidth={1.9} />
+
                   <span>{item.label}</span>
 
-                  {item.active && (
+                  {active && (
                     <ChevronRight
                       className="nav-arrow"
                       size={15}
@@ -85,7 +122,11 @@ function Sidebar() {
       </nav>
 
       <div className="sidebar-bottom">
-        <div className="quick-action">
+        <a
+          href="/quick-scan"
+          className="quick-action"
+          onClick={(event) => handleNavigation(event, "/quick-scan")}
+        >
           <div className="quick-action-icon">
             <Zap size={16} />
           </div>
@@ -96,20 +137,40 @@ function Sidebar() {
           </div>
 
           <ChevronRight size={15} />
-        </div>
+        </a>
 
         <div className="bottom-links">
-          <a href="#" className="bottom-link">
+          <a
+            href="/developer-tools"
+            className={`bottom-link ${
+              isActive("/developer-tools") ? "active" : ""
+            }`}
+            onClick={(event) =>
+              handleNavigation(event, "/developer-tools")
+            }
+          >
             <Terminal size={17} />
             <span>Developer Tools</span>
           </a>
 
-          <a href="#" className="bottom-link">
+          <a
+            href="/settings"
+            className={`bottom-link ${
+              isActive("/settings") ? "active" : ""
+            }`}
+            onClick={(event) => handleNavigation(event, "/settings")}
+          >
             <Settings size={17} />
             <span>Settings</span>
           </a>
 
-          <a href="#" className="bottom-link">
+          <a
+            href="/help"
+            className={`bottom-link ${
+              isActive("/help") ? "active" : ""
+            }`}
+            onClick={(event) => handleNavigation(event, "/help")}
+          >
             <CircleHelp size={17} />
             <span>Help & Docs</span>
           </a>

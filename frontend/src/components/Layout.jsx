@@ -1,9 +1,12 @@
 import Sidebar from "./Sidebar";
 
-function Layout({ children }) {
+function Layout({ children, currentPath, onNavigate }) {
   return (
     <div className="app-shell">
-      <Sidebar />
+      <Sidebar
+        currentPath={currentPath}
+        onNavigate={onNavigate}
+      />
 
       <main className="main-content">
         {children}
