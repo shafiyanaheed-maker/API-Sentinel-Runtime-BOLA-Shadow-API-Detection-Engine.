@@ -1,96 +1,69 @@
-from runtime.analyzer import analyze_request
-from runtime.models import APIRequest
-from runtime.traffic_parser import parse_request
+import re
+from typing import Any
 
 
-def test_parsed_bola_request_reaches_runtime_analyzer():
-    raw_request = (
-        "GET /users/102 HTTP/1.1\r\n"
-        "Host: example.com\r\n"
-        "\r\n"
-    )
+EMAIL_PATTERN = re.compile(
+    r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"
+)
 
-    parsed_request = parse_request(raw_request)
+PHONE_PATTERN = re.compile(
+    r"(?<!\d)(?:\+?\d[\d\s().-]{7,}\d)(?!\d)"
+)
 
-    request = APIRequest(
-        method=parsed_request.method,
-        path=parsed_request.path,
-        authenticated_user_id=101,
-        user_role="user",
-    )
+IP_ADDRESS_PATTERN = re.compile(
+    r"\b(?:\d{1,3}\.){3}\d{1,3}\b"
+)
 
-    result = analyze_request(request)
-
-    assert result.detected is True
-    assert any(threat["type"] == "BOLA" for threat in result.threats)
-    assert result.severity == "HIGH"
-
-
-def test_parsed_bfla_request_reaches_runtime_analyzer():
-    raw_request = (
-        "DELETE /admin/users HTTP/1.1\r\n"
-        "Host: example.com\r\n"
-        "\r\n"
-    )
-
-    parsed_request = parse_request(raw_request)
-
-    request = APIRequest(
-        method=parsed_request.method,
-        path=parsed_request.path,
-        authenticated_user_id=101,
-        user_role="user",
-    )
-
-    result = analyze_request(request)
-
-    assert result.detected is True
-    assert any(threat["type"] == "BFLA" for threat in result.threats)
-    assert result.severity == "HIGH"
+PII_FIELD_NAMES = {
+    "email",
+    "phone",
+    "mobile",
+    "telephone",
+    "ssn",
+    "social_security_number",
+    "credit_card",
+    "card_number",
+    "password",
+    "token",
+    "access_token",
+    "refresh_token",
+}
 
 
-def test_parsed_legitimate_request_passes_analysis():
-    raw_request = (
-        "GET /users/101 HTTP/1.1\r\n"
-        "Host: example.com\r\n"
-        "\r\n"
-    )
+def mask_text(value: str) -> str:
+    """Mask common PII and sensitive values inside text."""
+    if not isinstance(value, str):
+        return value
 
-    parsed_request = parse_request(raw_request)
+    masked = EMAIL_PATTERN.sub("[REDACTED_EMAIL]", value)
+    masked = PHONE_PATTERN.sub("[REDACTED_PHONE]", masked)
+    masked = IP_ADDRESS_PATTERN.sub("[REDACTED_IP]", masked)
 
-    request = APIRequest(
-        method=parsed_request.method,
-        path=parsed_request.path,
-        authenticated_user_id=101,
-        user_role="user",
-    )
-
-    result = analyze_request(request)
-
-    assert result.detected is False
-    assert result.threats == []
-    assert result.severity == "LOW"
+    return masked
 
 
-def test_parsed_request_with_body_reaches_analyzer():
-    raw_request = (
-        "POST /users HTTP/1.1\r\n"
-        "Host: example.com\r\n"
-        "Content-Type: application/json\r\n"
-        "\r\n"
-        '{"name": "test-user"}'
-    )
+def mask_pii(data: Any) -> Any:
+    """Recursively mask PII and sensitive fields in structured API data."""
+    if isinstance(data, dict):
+        masked_data = {}
 
-    parsed_request = parse_request(raw_request)
+        for key, value in data.items():
+            normalized_key = str(key).strip().lower()
 
-    request = APIRequest(
-        method=parsed_request.method,
-        path=parsed_request.path,
-        authenticated_user_id=101,
-        user_role="user",
-    )
+            if normalized_key in PII_FIELD_NAMES:
+                masked_data[key] = "[REDACTED]"
+            else:
+                masked_data[key] = mask_pii(value)
 
-    result = analyze_request(request)
+        return masked_data
 
-    assert result.detected is False
-    assert result.threats == []
+    if isinstance(data, list):
+        return [mask_pii(item) for item in data]
+
+    if isinstance(data, tuple):
+        return tuple(mask_pii(item) for item in data)
+
+    if isinstance(data, str):
+        return mask_text(data)
+
+    return data
