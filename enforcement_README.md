@@ -18,6 +18,8 @@ pip install -r requirements.txt
 - [x] Authorization enforcement (BOLA + BFLA) — object-level ownership
       checks and role-based function-level checks, with default-deny
       for unregistered endpoints. Tested in `tests/test_authorization.py`.
-- [ ] Blocking middleware
+- [x] Blocking middleware — enforces all four checks (volume rate limit,
+      business-flow rate limit, BFLA, BOLA) in sequence on every request.
+      Demo app at `app/main.py` verified with end-to-end curl tests.
 - [ ] Attack simulation scripts
 - [ ] Detection-accuracy validation
