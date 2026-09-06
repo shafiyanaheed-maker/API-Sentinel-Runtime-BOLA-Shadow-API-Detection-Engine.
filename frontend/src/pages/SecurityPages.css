@@ -1,0 +1,501 @@
+.security-page {
+  min-height: 100%;
+  padding: 42px 48px 60px;
+}
+
+.security-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 30px;
+}
+
+.security-page-title-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.security-page-title-row h1 {
+  margin: 0;
+  font-size: 32px;
+  line-height: 1.1;
+}
+
+.security-page-title-row p {
+  margin: 9px 0 0;
+  color: #7190b5;
+  font-size: 14px;
+}
+
+.security-page-icon {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 13px;
+  border: 1px solid #24354d;
+  background: #101a2a;
+}
+
+.bola-icon {
+  color: #66a9ff;
+}
+
+.bfla-icon {
+  color: #b294ff;
+}
+
+.threat-icon {
+  color: #ff8b8b;
+}
+
+.security-page-status {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 14px;
+  border: 1px solid #153b31;
+  border-radius: 8px;
+  background: #081b18;
+  color: #69d9a5;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.security-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.security-info-card {
+  min-height: 125px;
+  padding: 20px;
+  border: 1px solid #1c293b;
+  border-radius: 12px;
+  background: #0a111b;
+}
+
+.security-info-label {
+  display: block;
+  margin-bottom: 12px;
+  color: #607b9e;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+}
+
+.security-info-card strong {
+  display: block;
+  color: #eef5ff;
+  font-size: 22px;
+  text-transform: uppercase;
+}
+
+.security-info-card p {
+  margin: 7px 0 0;
+  color: #7188a7;
+  font-size: 12px;
+}
+
+.severity-high {
+  color: #ff7373 !important;
+}
+
+.security-panel {
+  margin-bottom: 20px;
+  overflow: hidden;
+  border: 1px solid #1c293b;
+  border-radius: 12px;
+  background: #0a111b;
+}
+
+.security-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 21px 23px;
+  border-bottom: 1px solid #1a2738;
+}
+
+.security-panel-header h2 {
+  margin: 0;
+  font-size: 17px;
+  color: #eef5ff;
+}
+
+.security-panel-header p {
+  margin: 6px 0 0;
+  color: #6e87a7;
+  font-size: 12px;
+}
+
+.security-panel-header > svg {
+  color: #638bb9;
+}
+
+.security-form {
+  padding: 23px;
+}
+
+.security-form-row {
+  display: grid;
+  grid-template-columns: 150px 1fr 210px;
+  gap: 15px;
+}
+
+.security-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #7e96b5;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.security-form input,
+.security-form select {
+  width: 100%;
+  box-sizing: border-box;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid #25364d;
+  border-radius: 7px;
+  outline: none;
+  background: #070d15;
+  color: #eaf2ff;
+  font: inherit;
+}
+
+.security-form input:focus,
+.security-form select:focus {
+  border-color: #377fd1;
+}
+
+.security-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.security-hint {
+  color: #667f9f;
+  font-size: 11px;
+}
+
+.security-hint strong {
+  color: #9bbce2;
+}
+
+.security-primary-button,
+.security-danger-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 17px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.security-primary-button {
+  border: 1px solid #327ed2;
+  background: #155eae;
+  color: white;
+}
+
+.security-primary-button:hover {
+  background: #1a6dc5;
+}
+
+.security-primary-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.security-danger-button {
+  border: 1px solid #5c3030;
+  background: #251314;
+  color: #ff8c8c;
+}
+
+.security-danger-button:hover {
+  background: #321719;
+}
+
+.security-result {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  padding: 18px 20px;
+  margin-bottom: 20px;
+  border: 1px solid #512d32;
+  border-radius: 10px;
+  background: #1b1014;
+  color: #ff8585;
+}
+
+.security-result p {
+  margin: 5px 0 0;
+  color: #ba7e84;
+  font-size: 12px;
+}
+
+.result-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.result-badge.danger {
+  border: 1px solid #5a2b31;
+  background: #211014;
+  color: #ff7777;
+}
+
+.result-badge.safe {
+  border: 1px solid #194535;
+  background: #081d18;
+  color: #68d9a4;
+}
+
+.result-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: #1a2738;
+}
+
+.result-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 19px 22px;
+  background: #0a111b;
+}
+
+.result-grid span {
+  color: #5f7899;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.result-grid strong {
+  color: #eaf2ff;
+  font-size: 13px;
+}
+
+.threat-result {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 20px;
+  padding: 16px;
+  border: 1px solid #522a31;
+  border-radius: 9px;
+  background: #170e12;
+}
+
+.threat-result-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: #32151b;
+  color: #ff7777;
+}
+
+.threat-result > div:nth-child(2) {
+  flex: 1;
+}
+
+.threat-result strong {
+  color: #f0f5ff;
+  font-size: 13px;
+}
+
+.threat-result p {
+  margin: 5px 0 0;
+  color: #a77980;
+  font-size: 11px;
+}
+
+.threat-severity {
+  color: #ff7373;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.empty-threat-state {
+  padding: 70px 30px;
+  text-align: center;
+}
+
+.empty-threat-icon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  border: 1px solid #293b54;
+  border-radius: 14px;
+  background: #101a28;
+  color: #6c8eb8;
+}
+
+.empty-threat-state h3 {
+  margin: 0;
+  color: #dce8f8;
+  font-size: 16px;
+}
+
+.empty-threat-state p {
+  max-width: 440px;
+  margin: 8px auto 0;
+  color: #69809e;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.threat-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.threat-list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px 22px;
+  border-bottom: 1px solid #182536;
+}
+
+.threat-list-item:last-child {
+  border-bottom: none;
+}
+
+.threat-list-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: #241318;
+  color: #ff7c7c;
+}
+
+.threat-list-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.threat-list-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.threat-list-title strong {
+  color: #edf4ff;
+  font-size: 13px;
+}
+
+.severity-pill {
+  padding: 3px 7px;
+  border-radius: 4px;
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.severity-pill.high,
+.severity-pill.critical {
+  background: #301519;
+  color: #ff7474;
+}
+
+.severity-pill.medium {
+  background: #302717;
+  color: #e6b85f;
+}
+
+.severity-pill.low {
+  background: #14261f;
+  color: #65c996;
+}
+
+.threat-list-main > p {
+  margin: 6px 0 9px;
+  color: #7890ad;
+  font-size: 11px;
+}
+
+.threat-list-meta {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  color: #526a88;
+  font-size: 10px;
+}
+
+.threat-list-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.threat-status {
+  padding: 5px 8px;
+  border-radius: 5px;
+  background: #0b241b;
+  color: #62d39d;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .security-page {
+    padding: 28px 22px 45px;
+  }
+
+  .security-page-header {
+    flex-direction: column;
+  }
+
+  .security-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .security-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .security-form-actions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .result-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
