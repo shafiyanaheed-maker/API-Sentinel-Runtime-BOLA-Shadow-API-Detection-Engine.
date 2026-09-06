@@ -53,8 +53,44 @@ def legitimate_traffic():
 
     return cases
 
+def attack_traffic():
+    """Requests that SHOULD be blocked. label=1 (malicious)."""
+    cases = []
+
+    # BOLA: user_a reads other users' orders
+    for order_id in ["1003", "1004", "1005"]:
+        r = requests.get(f"{HOST}/api/orders/{order_id}",
+                          headers={"X-User-Id": "user_a", "X-User-Role": "user"})
+        cases.append({"label": 1, "desc": f"user_a BOLA on order {order_id}",
+                       "status": r.status_code, "blocked": r.status_code in (403, 429)})
+        time.sleep(0.2)
+
+    # BFLA: normal user hits admin endpoints
+    r = requests.post(f"{HOST}/api/admin/users",
+                       headers={"X-User-Id": "user_c", "X-User-Role": "user"})
+    cases.append({"label": 1, "desc": "user_c BFLA on /admin/users",
+                   "status": r.status_code, "blocked": r.status_code in (403, 429)})
+
+    r = requests.post(f"{HOST}/api/admin/refund",
+                       headers={"X-User-Id": "user_c", "X-User-Role": "user"})
+    cases.append({"label": 1, "desc": "user_c BFLA on /admin/refund",
+                   "status": r.status_code, "blocked": r.status_code in (403, 429)})
+
+    # Volume abuse: burst on a fresh user id
+    r = None
+    for _ in range(25):
+        r = requests.get(f"{HOST}/api/products",
+                          headers={"X-User-Id": "user_flood", "X-User-Role": "user"})
+    cases.append({"label": 1, "desc": "user_flood burst (25th request)",
+                   "status": r.status_code, "blocked": r.status_code in (403, 429)})
+
+    return cases
+
 
 if __name__ == "__main__":
-    results = legitimate_traffic()
-    for c in results:
+    print("=== Legitimate traffic ===")
+    for c in legitimate_traffic():
+        print(c)
+    print("\n=== Attack traffic ===")
+    for c in attack_traffic():
         print(c)
