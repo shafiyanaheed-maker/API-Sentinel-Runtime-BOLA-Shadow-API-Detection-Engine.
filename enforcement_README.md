@@ -21,5 +21,8 @@ pip install -r requirements.txt
 - [x] Blocking middleware — enforces all four checks (volume rate limit,
       business-flow rate limit, BFLA, BOLA) in sequence on every request.
       Demo app at `app/main.py` verified with end-to-end curl tests.
-- [ ] Attack simulation scripts
-- [ ] Detection-accuracy validation
+- [x] Attack simulation scripts — BOLA, BFLA, and rate-limit/slow-scan
+      attacks, plus a combined runner. Verified against a live server.
+- [x] Detection-accuracy validation — labelled legitimate + attack traffic,
+      confusion matrix, precision/recall/F1. Achieved 1.0 precision,
+      1.0 recall, 0.0 false-positive rate on the test set.
