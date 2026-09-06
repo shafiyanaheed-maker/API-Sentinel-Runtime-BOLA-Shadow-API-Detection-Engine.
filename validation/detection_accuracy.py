@@ -112,10 +112,26 @@ def compute_metrics(cases):
     }
 
 
+def main():
+    legit = legitimate_traffic()
+    attacks = attack_traffic()
+    all_cases = legit + attacks
+    metrics = compute_metrics(all_cases)
+
+    print("\n=== Detection Accuracy Report ===")
+    for c in all_cases:
+        label = "ATTACK" if c["label"] == 1 else "legit "
+        outcome = "BLOCKED" if c["blocked"] else "allowed"
+        correct = (c["label"] == 1) == c["blocked"]
+        mark = "OK" if correct else "WRONG"
+        print(f"  [{label}] {c['desc']:<35} -> HTTP {c['status']} {outcome:8} [{mark}]")
+
+    print("\n--- Metrics ---")
+    for k, v in metrics.items():
+        print(f"  {k}: {v}")
+
+    return {"cases": all_cases, "metrics": metrics}
+
+
 if __name__ == "__main__":
-    print("=== Legitimate traffic ===")
-    for c in legitimate_traffic():
-        print(c)
-    print("\n=== Attack traffic ===")
-    for c in attack_traffic():
-        print(c)
+    main()
