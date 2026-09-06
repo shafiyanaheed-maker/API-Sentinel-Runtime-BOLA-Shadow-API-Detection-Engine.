@@ -6,6 +6,7 @@ import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import FeaturePage from "./pages/FeaturePage";
 import Landing from "./pages/Landing";
+import OWASPSecurity from "./pages/OWASPSecurity";
 
 function getCurrentPath() {
   const path = window.location.pathname;
@@ -56,6 +57,8 @@ function App() {
     >
       {currentPath === "/dashboard" ? (
         <Dashboard />
+      ) : currentPath === "/owasp-security" ? (
+        <OWASPSecurity />
       ) : (
         <FeaturePage path={currentPath} />
       )}
