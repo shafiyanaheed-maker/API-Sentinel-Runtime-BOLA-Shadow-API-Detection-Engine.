@@ -86,6 +86,31 @@ def attack_traffic():
 
     return cases
 
+def compute_metrics(cases):
+    """
+    Builds a confusion matrix from labelled results and computes
+    precision, recall, F1, and false-positive rate.
+    """
+    tp = sum(1 for c in cases if c["label"] == 1 and c["blocked"])
+    fn = sum(1 for c in cases if c["label"] == 1 and not c["blocked"])
+    fp = sum(1 for c in cases if c["label"] == 0 and c["blocked"])
+    tn = sum(1 for c in cases if c["label"] == 0 and not c["blocked"])
+
+    precision = tp / (tp + fp) if (tp + fp) else None
+    recall = tp / (tp + fn) if (tp + fn) else None
+    f1 = (2 * precision * recall / (precision + recall)
+          if precision and recall else None)
+    fpr = fp / (fp + tn) if (fp + tn) else None
+
+    return {
+        "true_positives": tp, "false_negatives": fn,
+        "false_positives": fp, "true_negatives": tn,
+        "precision": round(precision, 3) if precision is not None else None,
+        "recall": round(recall, 3) if recall is not None else None,
+        "f1_score": round(f1, 3) if f1 is not None else None,
+        "false_positive_rate": round(fpr, 3) if fpr is not None else None,
+    }
+
 
 if __name__ == "__main__":
     print("=== Legitimate traffic ===")
