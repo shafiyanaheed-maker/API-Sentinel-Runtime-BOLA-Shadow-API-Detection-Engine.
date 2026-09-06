@@ -15,6 +15,7 @@ import time
 
 import requests
 
+
 HOST = "http://127.0.0.1:8000"
 
 
@@ -149,7 +150,7 @@ def attack_traffic():
     cases.append(
         {
             "label": 1,
-            "desc": "user_c BFLA on /admin/refund",
+        "desc": "user_c BFLA on /admin/refund",
             "status": r.status_code,
             "blocked": r.status_code in (403, 429),
         }
@@ -178,43 +179,114 @@ def attack_traffic():
 
     return cases
 
+
 def compute_metrics(cases):
     """
     Builds a confusion matrix from labelled results and computes
     precision, recall, F1, and false-positive rate.
     """
-    tp = sum(1 for c in cases if c["label"] == 1 and c["blocked"])
-    fn = sum(1 for c in cases if c["label"] == 1 and not c["blocked"])
-    fp = sum(1 for c in cases if c["label"] == 0 and c["blocked"])
-    tn = sum(1 for c in cases if c["label"] == 0 and not c["blocked"])
+    tp = sum(
+        1
+        for c in cases
+        if c["label"] == 1 and c["blocked"]
+    )
+
+    fn = sum(
+        1
+        for c in cases
+        if c["label"] == 1 and not c["blocked"]
+    )
+
+    fp = sum(
+        1
+        for c in cases
+        if c["label"] == 0 and c["blocked"]
+    )
+
+    tn = sum(
+        1
+        for c in cases
+        if c["label"] == 0 and not c["blocked"]
+    )
 
     precision = tp / (tp + fp) if (tp + fp) else None
     recall = tp / (tp + fn) if (tp + fn) else None
-    f1 = (2 * precision * recall / (precision + recall)
-          if precision and recall else None)
+
+    f1 = (
+        2 * precision * recall / (precision + recall)
+        if precision is not None
+        and recall is not None
+        and (precision + recall)
+        else None
+    )
+
     fpr = fp / (fp + tn) if (fp + tn) else None
 
     return {
-        "true_positives": tp, "false_negatives": fn,
-        "false_positives": fp, "true_negatives": tn,
-        "precision": round(precision, 3) if precision is not None else None,
-        "recall": round(recall, 3) if recall is not None else None,
-        "f1_score": round(f1, 3) if f1 is not None else None,
-        "false_positive_rate": round(fpr, 3) if fpr is not None else None,
+        "true_positives": tp,
+        "false_negatives": fn,
+        "false_positives": fp,
+        "true_negatives": tn,
+        "precision": round(precision, 3)
+        if precision is not None
+        else None,
+        "recall": round(recall, 3)
+        if recall is not None
+        else None,
+        "f1_score": round(f1, 3)
+        if f1 is not None
+        else None,
+        "false_positive_rate": round(fpr, 3)
+        if fpr is not None
+        else None,
+    }
+
+
+def main():
+    """Run legitimate and attack traffic and print the accuracy report."""
+    legit = legitimate_traffic()
+    attacks = attack_traffic()
+
+    all_cases = legit + attacks
+    metrics = compute_metrics(all_cases)
+
+    print("\n=== Detection Accuracy Report ===")
+
+    for c in all_cases:
+        label = "ATTACK" if c["label"] == 1 else "legit "
+        outcome = "BLOCKED" if c["blocked"] else "allowed"
+        correct = (c["label"] == 1) == c["blocked"]
+        mark = "OK" if correct else "WRONG"
+
+        print(
+            f"  [{label}] "
+            f"{c['desc']:<35} -> "
+            f"HTTP {c['status']} "
+            f"{outcome:8} "
+            f"[{mark}]"
+        )
+
+    print("\n--- Confusion Matrix ---")
+    print(f"  True Positives : {metrics['true_positives']}")
+    print(f"  False Positives: {metrics['false_positives']}")
+    print(f"  True Negatives : {metrics['true_negatives']}")
+    print(f"  False Negatives: {metrics['false_negatives']}")
+
+    print("\n--- Metrics ---")
+    for key, value in metrics.items():
+        if key not in {
+            "true_positives",
+            "false_negatives",
+            "false_positives",
+            "true_negatives",
+        }:
+            print(f"  {key}: {value}")
+
+    return {
+        "cases": all_cases,
+        "metrics": metrics,
     }
 
 
 if __name__ == "__main__":
-    print("=== Legitimate traffic ===")
-
-    legitimate_results = legitimate_traffic()
-
-    for case in legitimate_results:
-        print(case)
-
-    print("\n=== Attack traffic ===")
-
-    attack_results = attack_traffic()
-
-    for case in attack_results:
-        print(case)
+    main()
