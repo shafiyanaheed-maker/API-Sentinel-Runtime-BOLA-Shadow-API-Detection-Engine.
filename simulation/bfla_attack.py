@@ -10,7 +10,7 @@ Usage:
 
 import requests
 
-HOST = "http://localhost:8000"
+HOST = "http://127.0.0.1:8000"
 ATTACKER = "user_b"  # a normal user, NOT an admin
 
 ADMIN_ENDPOINTS = [

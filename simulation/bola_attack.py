@@ -15,7 +15,7 @@ Usage:
 import time
 import requests
 
-HOST = "http://localhost:8000"
+HOST = "http://127.0.0.1:8000"
 ATTACKER = "user_a"  # legitimately owns orders 1001, 1002 only
 
 

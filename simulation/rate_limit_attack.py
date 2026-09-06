@@ -16,7 +16,7 @@ Usage:
 import time
 import requests
 
-HOST = "http://localhost:8000"
+HOST = "http://127.0.0.1:8000"
 
 
 def burst_flood(attacker="user_c", n=30):
