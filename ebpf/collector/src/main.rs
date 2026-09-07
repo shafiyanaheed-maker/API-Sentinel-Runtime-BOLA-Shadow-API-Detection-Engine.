@@ -1,44 +1,120 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use aya::{
-    programs::{Xdp, XdpMode},
+    maps::RingBuf,
+    programs::TracePoint,
     Ebpf,
+};
+use std::{
+    thread,
+    time::Duration,
 };
 
 fn main() -> Result<()> {
     let ebpf_path = "../kernel/target/bpfel-unknown-none/debug/kernel";
 
+    println!("=================================");
+    println!("API-Sentinel eBPF Traffic Collector");
+    println!("=================================");
     println!("Loading eBPF object: {}", ebpf_path);
 
     let mut ebpf = Ebpf::load_file(ebpf_path)?;
 
     println!("eBPF object loaded successfully.");
 
-    let program = ebpf
-        .program_mut("api_sentinel")
-        .ok_or_else(|| anyhow::anyhow!("api_sentinel program not found"))?;
+    {
+        let program = ebpf
+            .program_mut("api_sentinel")
+            .ok_or_else(|| anyhow!("api_sentinel program not found"))?;
 
-    let program: &mut Xdp = program.try_into()?;
+        let program: &mut TracePoint = program.try_into()?;
 
-    println!("Loading XDP program into kernel...");
+        println!("Loading tracepoint program...");
+        program.load()?;
 
-    program.load()?;
+        println!("Attaching to:");
+        println!("  category: syscalls");
+        println!("  event:    sys_enter_connect");
 
-    println!("XDP program loaded.");
+        program.attach("syscalls", "sys_enter_connect")?;
 
-    println!("Attaching api_sentinel to eth0...");
+        println!("Tracepoint attached successfully.");
+    }
 
-    program.attach("eth0", XdpMode::default())?;
+    let mut ring_buf = RingBuf::try_from(
+        ebpf.map_mut("EVENTS")
+            .ok_or_else(|| anyhow!("EVENTS map not found"))?,
+    )?;
 
-    println!("=================================");
-    println!("XDP program attached successfully!");
-    println!("Interface: eth0");
-    println!("Program:   api_sentinel");
-    println!("Action:    XDP_PASS");
-    println!("=================================");
-
-    println!("Press Ctrl+C to detach and exit.");
+    println!("Ring buffer initialized.");
+    println!();
+    println!("Waiting for network connection events...");
+    println!("Press Ctrl+C to stop.");
+    println!();
 
     loop {
-        std::thread::park();
+        while let Some(event) = ring_buf.next() {
+            let data: &[u8] = &event;
+
+            /*
+             * ApiEvent contains:
+             *
+             * pid        = 4 bytes
+             * tgid       = 4 bytes
+             * uid        = 4 bytes
+             * gid        = 4 bytes
+             * event_type = 4 bytes
+             *
+             * Total = 20 bytes
+             */
+
+            if data.len() != 20 {
+                println!(
+                    "Received unexpected event size: {} bytes",
+                    data.len()
+                );
+                continue;
+            }
+
+            let pid = u32::from_ne_bytes(
+                data[0..4]
+                    .try_into()
+                    .map_err(|_| anyhow!("invalid pid data"))?,
+            );
+
+            let tgid = u32::from_ne_bytes(
+                data[4..8]
+                    .try_into()
+                    .map_err(|_| anyhow!("invalid tgid data"))?,
+            );
+
+            let uid = u32::from_ne_bytes(
+                data[8..12]
+                    .try_into()
+                    .map_err(|_| anyhow!("invalid uid data"))?,
+            );
+
+            let gid = u32::from_ne_bytes(
+                data[12..16]
+                    .try_into()
+                    .map_err(|_| anyhow!("invalid gid data"))?,
+            );
+
+            let event_type = u32::from_ne_bytes(
+                data[16..20]
+                    .try_into()
+                    .map_err(|_| anyhow!("invalid event_type data"))?,
+            );
+
+            println!(
+                "[API-SENTINEL] event_type={} pid={} tgid={} uid={} gid={}",
+                event_type,
+                pid,
+                tgid,
+                uid,
+                gid
+            );
+        }
+
+        thread::sleep(Duration::from_millis(10));
     }
 }

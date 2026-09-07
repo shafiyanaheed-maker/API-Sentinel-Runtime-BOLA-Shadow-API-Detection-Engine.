@@ -1,9 +1,0 @@
-/mnt/c/API-SEN/API-Sentinel-TEAM/ebpf/kernel/target/bpfel-unknown-none/debug/build/aya-ebpf-bindings/95a1af4e4b0dadb9/out/aya_ebpf_bindings-95a1af4e4b0dadb9.d: /home/srikanth/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aya-ebpf-bindings-0.2.0/src/lib.rs /home/srikanth/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aya-ebpf-bindings-0.2.0/src/x86_64/bindings.rs /home/srikanth/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aya-ebpf-bindings-0.2.0/src/x86_64/helpers.rs
-
-/mnt/c/API-SEN/API-Sentinel-TEAM/ebpf/kernel/target/bpfel-unknown-none/debug/build/aya-ebpf-bindings/95a1af4e4b0dadb9/out/libaya_ebpf_bindings-95a1af4e4b0dadb9.rlib: /home/srikanth/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aya-ebpf-bindings-0.2.0/src/lib.rs /home/srikanth/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aya-ebpf-bindings-0.2.0/src/x86_64/bindings.rs /home/srikanth/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aya-ebpf-bindings-0.2.0/src/x86_64/helpers.rs
-
-/mnt/c/API-SEN/API-Sentinel-TEAM/ebpf/kernel/target/bpfel-unknown-none/debug/build/aya-ebpf-bindings/95a1af4e4b0dadb9/out/libaya_ebpf_bindings-95a1af4e4b0dadb9.rmeta: /home/srikanth/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aya-ebpf-bindings-0.2.0/src/lib.rs /home/srikanth/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aya-ebpf-bindings-0.2.0/src/x86_64/bindings.rs /home/srikanth/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aya-ebpf-bindings-0.2.0/src/x86_64/helpers.rs
-
-/home/srikanth/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aya-ebpf-bindings-0.2.0/src/lib.rs:
-/home/srikanth/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aya-ebpf-bindings-0.2.0/src/x86_64/bindings.rs:
-/home/srikanth/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aya-ebpf-bindings-0.2.0/src/x86_64/helpers.rs:
