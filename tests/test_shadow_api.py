@@ -5,6 +5,7 @@ import yaml
 
 from shadow_api.detector import ShadowAPIDetector
 from shadow_api.parser import extract_endpoints, load_openapi_spec
+from shadow_api.schema_generator import generate_openapi_schema
 from shadow_api.traffic import (
     build_endpoint_signature,
     extract_observed_endpoints,
@@ -193,3 +194,110 @@ def test_invalid_openapi_file_format(tmp_path):
 def test_missing_openapi_file():
     with pytest.raises(FileNotFoundError):
         load_openapi_spec("does-not-exist.yaml")
+
+
+def test_generate_openapi_schema_from_observed_traffic():
+    observed_requests = [
+        {
+            "method": "GET",
+            "path": "/users/101",
+        },
+        {
+            "method": "GET",
+            "path": "/users/102",
+        },
+        {
+            "method": "POST",
+            "path": "/users",
+        },
+        {
+            "method": "GET",
+            "path": "/orders/1001",
+        },
+    ]
+
+    schema = generate_openapi_schema(observed_requests)
+
+    assert schema["openapi"] == "3.0.3"
+
+    assert "/users/{id}" in schema["paths"]
+    assert "get" in schema["paths"]["/users/{id}"]
+
+    assert "/users" in schema["paths"]
+    assert "post" in schema["paths"]["/users"]
+
+    assert "/orders/{id}" in schema["paths"]
+    assert "get" in schema["paths"]["/orders/{id}"]
+
+
+def test_generated_schema_contains_path_parameter():
+    observed_requests = [
+        {
+            "method": "GET",
+            "path": "/orders/1001",
+        }
+    ]
+
+    schema = generate_openapi_schema(observed_requests)
+
+    operation = schema["paths"]["/orders/{id}"]["get"]
+
+    assert operation["parameters"] == [
+        {
+            "name": "id",
+            "in": "path",
+            "required": True,
+            "schema": {
+                "type": "string",
+            },
+        }
+    ]
+
+
+def test_generated_schema_uses_observed_status_code():
+    observed_requests = [
+        {
+            "method": "GET",
+            "path": "/users/101",
+            "status_code": 200,
+        },
+        {
+            "method": "GET",
+            "path": "/users/102",
+            "status_code": 404,
+        },
+    ]
+
+    schema = generate_openapi_schema(observed_requests)
+
+    responses = schema["paths"]["/users/{id}"]["get"]["responses"]
+
+    assert "200" in responses
+    assert "404" in responses
+
+
+def test_generated_schema_infers_request_body():
+    observed_requests = [
+        {
+            "method": "POST",
+            "path": "/users",
+            "request_content_type": "application/json",
+        }
+    ]
+
+    schema = generate_openapi_schema(observed_requests)
+
+    operation = schema["paths"]["/users"]["post"]
+
+    assert "requestBody" in operation
+    assert "application/json" in operation["requestBody"]["content"]
+
+
+def test_generated_schema_rejects_invalid_requests():
+    with pytest.raises(ValueError):
+        generate_openapi_schema("not-a-list")
+
+    with pytest.raises(ValueError):
+        generate_openapi_schema(
+            [{"path": "/users"}]
+        )

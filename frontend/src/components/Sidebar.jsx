@@ -52,6 +52,11 @@ const navigation = [
         icon: AlertTriangle,
         path: "/threat-center",
       },
+      {
+        label: "OWASP Security",
+        icon: FileWarning,
+        path: "/owasp-security",
+      },
     ],
   },
 ];
@@ -101,7 +106,9 @@ function Sidebar({ currentPath, onNavigate }) {
                   href={item.path}
                   key={item.label}
                   className={`nav-link ${active ? "active" : ""}`}
-                  onClick={(event) => handleNavigation(event, item.path)}
+                  onClick={(event) =>
+                    handleNavigation(event, item.path)
+                  }
                 >
                   <Icon size={18} strokeWidth={1.9} />
 
@@ -125,7 +132,9 @@ function Sidebar({ currentPath, onNavigate }) {
         <a
           href="/quick-scan"
           className="quick-action"
-          onClick={(event) => handleNavigation(event, "/quick-scan")}
+          onClick={(event) =>
+            handleNavigation(event, "/quick-scan")
+          }
         >
           <div className="quick-action-icon">
             <Zap size={16} />
@@ -158,7 +167,9 @@ function Sidebar({ currentPath, onNavigate }) {
             className={`bottom-link ${
               isActive("/settings") ? "active" : ""
             }`}
-            onClick={(event) => handleNavigation(event, "/settings")}
+            onClick={(event) =>
+              handleNavigation(event, "/settings")
+            }
           >
             <Settings size={17} />
             <span>Settings</span>
@@ -169,7 +180,9 @@ function Sidebar({ currentPath, onNavigate }) {
             className={`bottom-link ${
               isActive("/help") ? "active" : ""
             }`}
-            onClick={(event) => handleNavigation(event, "/help")}
+            onClick={(event) =>
+              handleNavigation(event, "/help")
+            }
           >
             <CircleHelp size={17} />
             <span>Help & Docs</span>
