@@ -4,6 +4,8 @@ use aya::{
     programs::TracePoint,
     Ebpf,
 };
+use reqwest::blocking::Client;
+use serde_json::json;
 use std::{
     thread,
     time::Duration,
@@ -11,6 +13,7 @@ use std::{
 
 fn main() -> Result<()> {
     let ebpf_path = "../kernel/target/bpfel-unknown-none/debug/kernel";
+    let api_url = "http://127.0.0.1:8000/api/v1/traffic/ingest";
 
     println!("=================================");
     println!("API-Sentinel eBPF Traffic Collector");
@@ -45,7 +48,10 @@ fn main() -> Result<()> {
             .ok_or_else(|| anyhow!("EVENTS map not found"))?,
     )?;
 
+    let client = Client::new();
+
     println!("Ring buffer initialized.");
+    println!("API endpoint: {}", api_url);
     println!();
     println!("Waiting for network connection events...");
     println!("Press Ctrl+C to stop.");
@@ -54,18 +60,6 @@ fn main() -> Result<()> {
     loop {
         while let Some(event) = ring_buf.next() {
             let data: &[u8] = &event;
-
-            /*
-             * ApiEvent contains:
-             *
-             * pid        = 4 bytes
-             * tgid       = 4 bytes
-             * uid        = 4 bytes
-             * gid        = 4 bytes
-             * event_type = 4 bytes
-             *
-             * Total = 20 bytes
-             */
 
             if data.len() != 20 {
                 println!(
@@ -113,6 +107,51 @@ fn main() -> Result<()> {
                 uid,
                 gid
             );
+
+            let payload = json!({
+                "method": "CONNECT",
+                "path": "/ebpf/connect",
+                "host": "kernel",
+                "status_code": 200,
+                "source_ip": "127.0.0.1",
+                "destination_ip": null,
+                "authenticated_user_id": uid,
+                "user_role": "system",
+                "request_headers": {
+                    "x-ebpf-event": "connect",
+                    "x-ebpf-pid": pid.to_string(),
+                    "x-ebpf-tgid": tgid.to_string(),
+                    "x-ebpf-gid": gid.to_string(),
+                    "x-ebpf-event-type": event_type.to_string()
+                },
+                "request_body": null,
+                "response_headers": {},
+                "response_body": null,
+                "latency_ms": 0
+            });
+
+            match client.post(api_url).json(&payload).send() {
+                Ok(response) => {
+                    if response.status().is_success() {
+                        println!(
+                            "[API-SENTINEL] forwarded successfully: HTTP {}",
+                            response.status()
+                        );
+                    } else {
+                        println!(
+                            "[API-SENTINEL] API rejected event: HTTP {}",
+                            response.status()
+                        );
+                    }
+                }
+
+                Err(error) => {
+                    println!(
+                        "[API-SENTINEL] failed to forward event: {}",
+                        error
+                    );
+                }
+            }
         }
 
         thread::sleep(Duration::from_millis(10));
