@@ -10,3 +10,6 @@ frontend/dist/
 alerts.log
 *.log
 /ebpf/collector/target/
+api_sentinel.db
+collector_check.txt
+kernel_check.txt
