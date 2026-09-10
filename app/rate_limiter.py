@@ -46,7 +46,8 @@ class RequestRateLimiter:
         if len(window) >= self.max_requests:
             return RateLimitDecision(
                 allowed=False,
-                reason=f"Rate limit exceeded: {len(window)}/{self.max_requests} requests in {self.window_seconds}s",
+                reason=(f"Rate limit exceeded: {len(window)}/{self.max_requests} "
+                        f"requests in {self.window_seconds}s"),
                 remaining=0,
             )
 
