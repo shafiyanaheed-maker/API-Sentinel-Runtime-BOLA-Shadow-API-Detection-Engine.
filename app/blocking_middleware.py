@@ -36,7 +36,7 @@ class EnforcementMiddleware(BaseHTTPMiddleware):
         user_id = request.headers.get("X-User-Id", "anonymous")
         role_header = request.headers.get("X-User-Role", "user")
         role = Role.ADMIN if role_header == "admin" else Role.USER
-        
+
         endpoint_pattern, object_id = self._match_pattern(request.url.path)
 
         # 1. Volume rate limit
@@ -49,7 +49,8 @@ class EnforcementMiddleware(BaseHTTPMiddleware):
 
         # 2. Business-flow rate limit (only if there's an object_id)
         if object_id is not None:
-            flow_decision = self.flow_limiter.check(user_id, endpoint_pattern, object_id)
+            flow_decision = self.flow_limiter.check(
+                user_id, endpoint_pattern, object_id)
             if not flow_decision.allowed:
                 return JSONResponse(
                     status_code=429,
@@ -57,7 +58,8 @@ class EnforcementMiddleware(BaseHTTPMiddleware):
                 )
 
         # 3. Function-level authorization (BFLA)
-        func_decision = self.authorizer.check_function_level(role, endpoint_pattern)
+        func_decision = self.authorizer.check_function_level(
+            role, endpoint_pattern)
         if not func_decision.allowed:
             return JSONResponse(
                 status_code=403,
@@ -66,7 +68,8 @@ class EnforcementMiddleware(BaseHTTPMiddleware):
 
         # 4. Object-level authorization (BOLA) - only if there's an object_id
         if object_id is not None:
-            obj_decision = self.authorizer.check_object_level(user_id, object_id)
+            obj_decision = self.authorizer.check_object_level(
+                user_id, object_id)
             if not obj_decision.allowed:
                 return JSONResponse(
                     status_code=403,
@@ -86,11 +89,12 @@ class EnforcementMiddleware(BaseHTTPMiddleware):
         orders_match = re.match(r"^/api/orders/(?P<id>[^/]+)$", path)
         if orders_match:
             return "/api/orders/{id}", orders_match.group("id")
-        
+
         # Static endpoints with no object_id
-        static_endpoints = {"/api/products", "/api/admin/users", "/api/admin/refund", "/health"}
+        static_endpoints = {"/api/products",
+                            "/api/admin/users", "/api/admin/refund", "/health"}
         if path in static_endpoints:
             return path, None
-        
+
         # Unknown endpoint
         return path, None

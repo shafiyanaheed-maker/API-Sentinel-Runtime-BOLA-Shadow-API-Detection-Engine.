@@ -57,7 +57,8 @@ class RequestRateLimiter:
             reason="within limit",
             remaining=self.max_requests - len(window),
         )
-        
+
+
 class BusinessFlowLimiter:
     """
     Flags object-scanning behaviour: too many DISTINCT object IDs touched
@@ -89,8 +90,8 @@ class BusinessFlowLimiter:
             return RateLimitDecision(
                 allowed=False,
                 reason=f"Object-scan pattern detected: {len(distinct_ids)} distinct objects "
-                       f"on {endpoint_pattern} in {self.window_seconds}s "
-                       f"(limit {self.max_distinct_objects})",
+                f"on {endpoint_pattern} in {self.window_seconds}s "
+                f"(limit {self.max_distinct_objects})",
                 remaining=0,
             )
 

@@ -20,7 +20,8 @@ ADMIN_ENDPOINTS = [
 
 
 def run():
-    print(f"\n=== BFLA attack simulation (attacker='{ATTACKER}', role='user') ===")
+    print(
+        f"\n=== BFLA attack simulation (attacker='{ATTACKER}', role='user') ===")
     results = []
 
     for method, path in ADMIN_ENDPOINTS:
@@ -34,7 +35,8 @@ def run():
               f"{'BLOCKED' if blocked else 'allowed'}")
 
     blocked_count = sum(1 for _, _, b in results if b)
-    print(f"\n{blocked_count}/{len(results)} privilege-escalation attempts were blocked.")
+    print(
+        f"\n{blocked_count}/{len(results)} privilege-escalation attempts were blocked.")
     return results
 
 

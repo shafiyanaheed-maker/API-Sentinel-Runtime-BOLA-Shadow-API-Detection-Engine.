@@ -29,8 +29,10 @@ def main():
     print("=" * 60)
     bola_blocked = sum(1 for _, _, b in bola_results if b)
     bfla_blocked = sum(1 for _, _, b in bfla_results if b)
-    print(f"BOLA cross-owner reads blocked      : {bola_blocked}/{len(bola_results)}")
-    print(f"BFLA admin-endpoint attempts blocked : {bfla_blocked}/{len(bfla_results)}")
+    print(
+        f"BOLA cross-owner reads blocked      : {bola_blocked}/{len(bola_results)}")
+    print(
+        f"BFLA admin-endpoint attempts blocked : {bfla_blocked}/{len(bfla_results)}")
     print(f"Burst-flood requests blocked         : {flood_blocked}/30")
     print(f"Slow-scan requests blocked           : {scan_blocked}/8")
 
