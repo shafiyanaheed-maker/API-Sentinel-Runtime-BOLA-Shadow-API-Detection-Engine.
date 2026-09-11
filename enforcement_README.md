@@ -28,3 +28,18 @@ pip install -r requirements.txt
 - [x] Detection-accuracy validation — labelled legitimate + attack traffic,
       confusion matrix, precision/recall/F1. Achieved 1.0 precision,
       1.0 recall, 0.0 false-positive rate on the test set.
+
+## Test Coverage
+
+Current test coverage (via `pytest-cov`):
+
+| Module | Coverage |
+|---|---|
+| `app/authorization.py` | 100% |
+| `app/rate_limiter.py` | 95% |
+| `app/blocking_middleware.py`, `app/main.py` | 0% (integration-tested manually, not via pytest) |
+| `simulation/*` | 0% (run as standalone attack scripts) |
+| `validation/detection_accuracy.py` | 0% (run as standalone validation script) |
+| **Overall** | **25%** |
+
+> Note: Core enforcement logic (authorization, rate limiting) has full unit test coverage. Simulation and validation scripts are verified through manual integration runs rather than pytest, which is why they show 0% here.
