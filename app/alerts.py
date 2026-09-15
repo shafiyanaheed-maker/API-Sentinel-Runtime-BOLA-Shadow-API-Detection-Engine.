@@ -62,6 +62,16 @@ class AlertManager:
     def __init__(self, log_path: Path = DEFAULT_LOG_PATH):
         self.log_path = Path(log_path)
         self._alerts: list[Alert] = []
+        
+    def raise_alert(
+        self,
+        violation_type: str,
+        user_id: str,
+        context: str,
+        reason: str,
+    ) -> Alert:
+        alert = Alert
+        ...
 
     def raise_alert(
         self,
