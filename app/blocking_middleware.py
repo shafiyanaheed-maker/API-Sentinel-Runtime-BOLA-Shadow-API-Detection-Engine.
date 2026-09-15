@@ -7,15 +7,18 @@ BOLA), and blocks with appropriate HTTP status codes if anything fails.
 
 Every block triggers an alert that goes to the dashboard.
 """
-
 from __future__ import annotations
+
+import re
+
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse
-import re
 
-from .rate_limiter import RequestRateLimiter, BusinessFlowLimiter
+from app.alerts import alert_manager
+
 from .authorization import AuthorizationEnforcer, Role
+from .rate_limiter import BusinessFlowLimiter, RequestRateLimiter
 
 
 class EnforcementMiddleware(BaseHTTPMiddleware):
@@ -23,10 +26,13 @@ class EnforcementMiddleware(BaseHTTPMiddleware):
     HTTP middleware that enforces rate limits and authorization on every request.
     """
 
-    def __init__(self, app,
-                 rate_limiter: RequestRateLimiter | None = None,
-                 flow_limiter: BusinessFlowLimiter | None = None,
-                 authorizer: AuthorizationEnforcer | None = None):
+    def __init__(
+        self,
+        app,
+        rate_limiter: RequestRateLimiter | None = None,
+        flow_limiter: BusinessFlowLimiter | None = None,
+        authorizer: AuthorizationEnforcer | None = None,
+    ):
         super().__init__(app)
         self.rate_limiter = rate_limiter or RequestRateLimiter()
         self.flow_limiter = flow_limiter or BusinessFlowLimiter()
@@ -42,6 +48,13 @@ class EnforcementMiddleware(BaseHTTPMiddleware):
         # 1. Volume rate limit
         rl_decision = self.rate_limiter.check(user_id, endpoint_pattern)
         if not rl_decision.allowed:
+            alert_manager.raise_alert(
+                violation_type="RATE_LIMIT",
+                user_id=user_id,
+                context=f"endpoint={endpoint_pattern}",
+                reason=rl_decision.reason,
+            )
+
             return JSONResponse(
                 status_code=429,
                 content={"blocked": True, "reason": rl_decision.reason},
@@ -50,31 +63,51 @@ class EnforcementMiddleware(BaseHTTPMiddleware):
         # 2. Business-flow rate limit (only if there's an object_id)
         if object_id is not None:
             flow_decision = self.flow_limiter.check(
-                user_id, endpoint_pattern, object_id)
+                user_id, endpoint_pattern, object_id
+            )
             if not flow_decision.allowed:
-                return JSONResponse(
-                    status_code=429,
-                    content={"blocked": True, "reason": flow_decision.reason},
+                alert_manager.raise_alert(
+                  violation_type="RATE_LIMIT",
+                  user_id=user_id,
+                  context=f"endpoint={endpoint_pattern}, object_id={object_id}",
+                  reason=flow_decision.reason,
                 )
+                
+            return JSONResponse(
+              status_code=429,
+              content={"blocked": True, "reason": flow_decision.reason},
+            )
 
         # 3. Function-level authorization (BFLA)
-        func_decision = self.authorizer.check_function_level(
-            role, endpoint_pattern)
+        func_decision = self.authorizer.check_function_level(role, endpoint_pattern)
         if not func_decision.allowed:
-            return JSONResponse(
-                status_code=403,
-                content={"blocked": True, "reason": func_decision.reason},
+            alert_manager.raise_alert(
+               violation_type="BFLA",
+               user_id=user_id,
+               context=f"endpoint={endpoint_pattern}, role={role}",
+               reason=func_decision.reason,
             )
+            
+        return JSONResponse(
+           status_code=403,
+           content={"blocked": True, "reason": func_decision.reason},
+       )
 
         # 4. Object-level authorization (BOLA) - only if there's an object_id
         if object_id is not None:
-            obj_decision = self.authorizer.check_object_level(
-                user_id, object_id)
+            obj_decision = self.authorizer.check_object_level(user_id, object_id)
             if not obj_decision.allowed:
-                return JSONResponse(
-                    status_code=403,
-                    content={"blocked": True, "reason": obj_decision.reason},
+                alert_manager.raise_alert(
+                   violation_type="BOLA",
+                   user_id=user_id,
+                   context=f"object_id={object_id}",
+                   reason=obj_decision.reason,
                 )
+                
+            return JSONResponse(
+               status_code=403,
+               content={"blocked": True, "reason": obj_decision.reason},
+           )
 
         # All checks passed - let the request through
         return await call_next(request)
@@ -91,8 +124,12 @@ class EnforcementMiddleware(BaseHTTPMiddleware):
             return "/api/orders/{id}", orders_match.group("id")
 
         # Static endpoints with no object_id
-        static_endpoints = {"/api/products",
-                            "/api/admin/users", "/api/admin/refund", "/health"}
+        static_endpoints = {
+            "/api/products",
+            "/api/admin/users",
+            "/api/admin/refund",
+            "/health",
+        }
         if path in static_endpoints:
             return path, None
 
