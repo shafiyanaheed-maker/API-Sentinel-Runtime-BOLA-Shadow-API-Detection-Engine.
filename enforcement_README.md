@@ -1,6 +1,6 @@
 [![Run Tests](https://github.com/shafiyanaheed-maker/API-Sentinel-Runtime-BOLA-Shadow-API-Detection-Engine./actions/workflows/tests.yml/badge.svg)](https://github.com/shafiyanaheed-maker/API-Sentinel-Runtime-BOLA-Shadow-API-Detection-Engine./actions/workflows/tests.yml)
 
-# API-Sentinel — Enforcement, Rate Limiting & Attack Simulation# API-Sentinel — Enforcement, Rate Limiting & Attack Simulation
+# API-Sentinel — Enforcement, Rate Limiting & Attack Simulation
 
 Owner: Anshika
 
