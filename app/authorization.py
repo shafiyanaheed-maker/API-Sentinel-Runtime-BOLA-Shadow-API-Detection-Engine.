@@ -19,7 +19,6 @@ class Role(str, Enum):
     USER = "user"
     ADMIN = "admin"
 
-
 @dataclass
 class AuthDecision:
     allowed: bool
@@ -43,7 +42,6 @@ MOCK_ENDPOINT_ROLES = {
     "/api/admin/refund": {Role.ADMIN},
     "/api/products": {Role.USER, Role.ADMIN},
 }
-
 
 class AuthorizationEnforcer:
     def __init__(self,
@@ -70,7 +68,7 @@ class AuthorizationEnforcer:
                 allowed=False,
                 violation_type="BOLA",
                 reason=f"user '{user_id}' attempted to access object '{object_id}' "
-                f"owned by '{owner}'",
+                       f"owned by '{owner}'",
             )
 
         return AuthDecision(
@@ -78,7 +76,7 @@ class AuthorizationEnforcer:
             violation_type=None,
             reason="owner match",
         )
-
+        
     def check_function_level(self, role: Role, endpoint_pattern: str) -> AuthDecision:
         allowed_roles = self.role_map.get(endpoint_pattern)
 
@@ -91,7 +89,7 @@ class AuthorizationEnforcer:
                 allowed=False,
                 violation_type="BFLA",
                 reason=f"endpoint '{endpoint_pattern}' has no registered role "
-                f"policy (default-deny)",
+                       f"policy (default-deny)",
             )
 
         if role not in allowed_roles:
@@ -99,7 +97,7 @@ class AuthorizationEnforcer:
                 allowed=False,
                 violation_type="BFLA",
                 reason=f"role '{role}' is not permitted on '{endpoint_pattern}' "
-                f"(requires one of {sorted(r.value for r in allowed_roles)})",
+                       f"(requires one of {sorted(r.value for r in allowed_roles)})",
             )
 
         return AuthDecision(
