@@ -46,10 +46,7 @@ class RequestRateLimiter:
         if len(window) >= self.max_requests:
             return RateLimitDecision(
                 allowed=False,
-                reason=(
-                    f"Rate limit exceeded: {len(window)}/{self.max_requests} "
-                    f"requests in {self.window_seconds}s"
-                ),
+                reason=f"Rate limit exceeded: {len(window)}/{self.max_requests} requests in {self.window_seconds}s",
                 remaining=0,
             )
 
@@ -102,12 +99,9 @@ class BusinessFlowLimiter:
         if len(distinct_ids) > self.max_distinct_objects:
             return RateLimitDecision(
                 allowed=False,
-                reason=(
-                    f"Object-scan pattern detected: "
-                    f"{len(distinct_ids)} distinct objects on "
-                    f"{endpoint_pattern} in {self.window_seconds}s "
-                    f"(limit {self.max_distinct_objects})"
-                ),
+                reason=f"Object-scan pattern detected: {len(distinct_ids)} distinct objects "
+                       f"on {endpoint_pattern} in {self.window_seconds}s "
+                       f"(limit {self.max_distinct_objects})",
                 remaining=0,
             )
 
