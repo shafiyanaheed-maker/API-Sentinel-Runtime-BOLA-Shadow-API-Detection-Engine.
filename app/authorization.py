@@ -35,11 +35,11 @@ MOCK_ORDER_OWNERSHIP = {
     "1005": "user_c",
 }
 
-# Mock data: endpoint pattern -> set of roles allowed to call it
 MOCK_ENDPOINT_ROLES = {
     "/api/orders/{id}": {Role.USER, Role.ADMIN},
     "/api/admin/users": {Role.ADMIN},
     "/api/admin/refund": {Role.ADMIN},
+    "/api/admin/audit": {Role.ADMIN},
     "/api/products": {Role.USER, Role.ADMIN},
 }
 
