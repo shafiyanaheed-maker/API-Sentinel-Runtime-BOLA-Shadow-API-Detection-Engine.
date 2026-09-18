@@ -31,11 +31,12 @@ class Alert:
     timestamp: str        # ISO 8601, UTC
     violation_type: str   # "BOLA", "BFLA", "RATE_LIMIT"
     user_id: str
-    context: str           # object_id, endpoint pattern, etc. -- whatever
-                            # is most relevant for this violation type
-    reason: str            # human-readable reason, reused from the
-                            # AuthDecision / RateLimitDecision that
-                            # triggered this alert
+    # context: object_id, endpoint pattern, etc. -- whatever is most
+    # relevant for this violation type
+    context: str
+    # reason: human-readable reason, reused from the AuthDecision /
+    # RateLimitDecision that triggered this alert
+    reason: str
     severity: str
 
     def to_dict(self) -> dict:
@@ -62,16 +63,6 @@ class AlertManager:
     def __init__(self, log_path: Path = DEFAULT_LOG_PATH):
         self.log_path = Path(log_path)
         self._alerts: list[Alert] = []
-        
-    def raise_alert(
-        self,
-        violation_type: str,
-        user_id: str,
-        context: str,
-        reason: str,
-    ) -> Alert:
-        alert = Alert
-        ...
 
     def raise_alert(
         self,
