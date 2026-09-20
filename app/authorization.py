@@ -19,6 +19,7 @@ class Role(str, Enum):
     USER = "user"
     ADMIN = "admin"
 
+
 @dataclass
 class AuthDecision:
     allowed: bool
@@ -42,6 +43,7 @@ MOCK_ENDPOINT_ROLES = {
     "/api/admin/audit": {Role.ADMIN},
     "/api/products": {Role.USER, Role.ADMIN},
 }
+
 
 class AuthorizationEnforcer:
     def __init__(self,
@@ -76,7 +78,7 @@ class AuthorizationEnforcer:
             violation_type=None,
             reason="owner match",
         )
-        
+
     def check_function_level(self, role: Role, endpoint_pattern: str) -> AuthDecision:
         allowed_roles = self.role_map.get(endpoint_pattern)
 
