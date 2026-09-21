@@ -2,8 +2,9 @@
 blocking_middleware.py
 
 The enforcement middleware: sits between incoming requests and route handlers,
-runs all four checks in sequence (rate limit volume, rate limit flow, BFLA,
-BOLA), and blocks with appropriate HTTP status codes if anything fails.
+runs all checks in sequence (IP rate limit, volume rate limit, flow rate
+limit, BFLA, BOLA), and blocks with appropriate HTTP status codes if
+anything fails.
 
 Every block triggers an alert that goes to the dashboard. Every request,
 allowed or blocked, is recorded to the audit log.
@@ -15,7 +16,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 import re
 
-from .rate_limiter import RequestRateLimiter, BusinessFlowLimiter
+from .rate_limiter import RequestRateLimiter, BusinessFlowLimiter, IPRateLimiter
 from .authorization import AuthorizationEnforcer, Role
 from .audit import audit_logger
 
@@ -28,11 +29,13 @@ class EnforcementMiddleware(BaseHTTPMiddleware):
     def __init__(self, app,
                  rate_limiter: RequestRateLimiter | None = None,
                  flow_limiter: BusinessFlowLimiter | None = None,
-                 authorizer: AuthorizationEnforcer | None = None):
+                 authorizer: AuthorizationEnforcer | None = None,
+                 ip_limiter: IPRateLimiter | None = None):
         super().__init__(app)
         self.rate_limiter = rate_limiter or RequestRateLimiter()
         self.flow_limiter = flow_limiter or BusinessFlowLimiter()
         self.authorizer = authorizer or AuthorizationEnforcer()
+        self.ip_limiter = ip_limiter or IPRateLimiter()
 
     async def dispatch(self, request: Request, call_next):
         user_id = request.headers.get("X-User-Id", "anonymous")
@@ -40,6 +43,23 @@ class EnforcementMiddleware(BaseHTTPMiddleware):
         role = Role.ADMIN if role_header == "admin" else Role.USER
 
         endpoint_pattern, object_id = self._match_pattern(request.url.path)
+
+        # 0. IP rate limit - only for anonymous/unauthenticated traffic.
+        # Authenticated users are already covered by the per-user volume
+        # limiter below, so this specifically closes the gap where an
+        # attacker omits or rotates X-User-Id to dodge that limiter.
+        if user_id == "anonymous":
+            client_ip = request.client.host if request.client else "unknown"
+            ip_decision = self.ip_limiter.check(client_ip, endpoint_pattern)
+            if not ip_decision.allowed:
+                audit_logger.append(
+                    user_id=user_id, endpoint=endpoint_pattern, method=request.method,
+                    allowed=False, reason=ip_decision.reason,
+                )
+                return JSONResponse(
+                    status_code=429,
+                    content={"blocked": True, "reason": ip_decision.reason},
+                )
 
         # 1. Volume rate limit
         rl_decision = self.rate_limiter.check(user_id, endpoint_pattern)
