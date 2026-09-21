@@ -118,3 +118,47 @@ class BusinessFlowLimiter:
             reason="within business-flow limit",
             remaining=self.max_distinct_objects - len(distinct_ids),
         )
+
+
+class IPRateLimiter:
+    """
+    Sliding-window rate limiter keyed on client IP address rather than
+    user_id. Exists to catch abuse from anonymous or spoofed-identity
+    traffic -- an attacker who omits X-User-Id or rotates it on every
+    request bypasses RequestRateLimiter entirely, since each "user"
+    looks fresh. This limiter closes that gap by tracking the one thing
+    an attacker can't easily rotate: their IP.
+
+    Intended to run ONLY for requests with no authenticated user_id
+    (see EnforcementMiddleware), so legitimate logged-in users sharing
+    an IP (office NAT, etc.) aren't double-throttled by both limiters.
+    """
+
+    def __init__(self, max_requests: int = 30, window_seconds: int = 10):
+        self.max_requests = max_requests
+        self.window_seconds = window_seconds
+        self._log: dict[str, deque] = defaultdict(deque)
+
+    def check(self, ip: str, endpoint: str) -> RateLimitDecision:
+        now = time.time()
+        key = f"{ip}:{endpoint}"
+        window = self._log[key]
+
+        while window and now - window[0] > self.window_seconds:
+            window.popleft()
+
+        if len(window) >= self.max_requests:
+            return RateLimitDecision(
+                allowed=False,
+                reason=f"IP rate limit exceeded: {len(window)}/{self.max_requests} "
+                       f"requests from {ip} in {self.window_seconds}s",
+                remaining=0,
+            )
+
+        window.append(now)
+
+        return RateLimitDecision(
+            allowed=True,
+            reason="within IP rate limit",
+            remaining=self.max_requests - len(window),
+        )
