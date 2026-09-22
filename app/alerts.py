@@ -5,14 +5,17 @@ Alerting module for the enforcement layer.
 
 Every time the blocking middleware denies a request (BOLA, BFLA, or
 rate-limit violation), it emits an Alert through the AlertManager.
-Alerts are kept in memory for fast querying and also appended to
-alerts.log for a persistent, human-readable record.
+Alerts are kept in memory for fast querying, appended to alerts.log for
+a persistent, human-readable record, and forwarded to an external
+webhook (Slack/Discord-compatible) if one is configured.
 """
 
 from dataclasses import dataclass, asdict
 from datetime import datetime, timezone
 from pathlib import Path
 import json
+
+from .notifications import notifier
 
 # Severity is inferred automatically from violation_type rather than
 # passed in manually -- access-control breaches (BOLA/BFLA) are more
@@ -45,10 +48,19 @@ class Alert:
     def to_json(self) -> str:
         return json.dumps(self.to_dict())
 
+    def to_notification_text(self) -> str:
+        """Short, human-readable one-liner for Slack/Discord."""
+        icon = "🚨" if self.severity == "HIGH" else "⚠️"
+        return (
+            f"{icon} [{self.severity}] {self.violation_type} by '{self.user_id}': "
+            f"{self.reason}"
+        )
+
 
 class AlertManager:
     """
-    Collects alerts in memory and persists them to a log file.
+    Collects alerts in memory, persists them to a log file, and forwards
+    them to an external webhook if one is configured.
 
     Usage:
         alerts = AlertManager()
@@ -81,6 +93,7 @@ class AlertManager:
         )
         self._alerts.append(alert)
         self._write_to_log(alert)
+        notifier.send(alert.to_notification_text())
         return alert
 
     def get_recent_alerts(self, limit: int = 20) -> list[Alert]:
