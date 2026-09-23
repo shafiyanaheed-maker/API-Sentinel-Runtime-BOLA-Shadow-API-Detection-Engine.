@@ -6,8 +6,9 @@ runs all checks in sequence (IP rate limit, volume rate limit, flow rate
 limit, BFLA, BOLA), and blocks with appropriate HTTP status codes if
 anything fails.
 
-Every block triggers an alert that goes to the dashboard. Every request,
-allowed or blocked, is recorded to the audit log.
+Every block triggers an alert (logged + optionally sent to a webhook) and
+is recorded to the audit log. Every request, allowed or blocked, is
+recorded to the audit log.
 """
 
 from __future__ import annotations
@@ -19,6 +20,7 @@ import re
 from .rate_limiter import RequestRateLimiter, BusinessFlowLimiter, IPRateLimiter
 from .authorization import AuthorizationEnforcer, Role
 from .audit import audit_logger
+from .alerts import alert_manager
 
 
 class EnforcementMiddleware(BaseHTTPMiddleware):
@@ -45,9 +47,6 @@ class EnforcementMiddleware(BaseHTTPMiddleware):
         endpoint_pattern, object_id = self._match_pattern(request.url.path)
 
         # 0. IP rate limit - only for anonymous/unauthenticated traffic.
-        # Authenticated users are already covered by the per-user volume
-        # limiter below, so this specifically closes the gap where an
-        # attacker omits or rotates X-User-Id to dodge that limiter.
         if user_id == "anonymous":
             client_ip = request.client.host if request.client else "unknown"
             ip_decision = self.ip_limiter.check(client_ip, endpoint_pattern)
@@ -55,6 +54,12 @@ class EnforcementMiddleware(BaseHTTPMiddleware):
                 audit_logger.append(
                     user_id=user_id, endpoint=endpoint_pattern, method=request.method,
                     allowed=False, reason=ip_decision.reason,
+                )
+                alert_manager.raise_alert(
+                    violation_type="RATE_LIMIT",
+                    user_id=f"ip:{client_ip}",
+                    context=endpoint_pattern,
+                    reason=ip_decision.reason,
                 )
                 return JSONResponse(
                     status_code=429,
@@ -67,6 +72,12 @@ class EnforcementMiddleware(BaseHTTPMiddleware):
             audit_logger.append(
                 user_id=user_id, endpoint=endpoint_pattern, method=request.method,
                 allowed=False, reason=rl_decision.reason,
+            )
+            alert_manager.raise_alert(
+                violation_type="RATE_LIMIT",
+                user_id=user_id,
+                context=endpoint_pattern,
+                reason=rl_decision.reason,
             )
             return JSONResponse(
                 status_code=429,
@@ -81,6 +92,12 @@ class EnforcementMiddleware(BaseHTTPMiddleware):
                     user_id=user_id, endpoint=endpoint_pattern, method=request.method,
                     allowed=False, reason=flow_decision.reason,
                 )
+                alert_manager.raise_alert(
+                    violation_type="RATE_LIMIT",
+                    user_id=user_id,
+                    context=f"{endpoint_pattern} object_id={object_id}",
+                    reason=flow_decision.reason,
+                )
                 return JSONResponse(
                     status_code=429,
                     content={"blocked": True, "reason": flow_decision.reason},
@@ -92,6 +109,12 @@ class EnforcementMiddleware(BaseHTTPMiddleware):
             audit_logger.append(
                 user_id=user_id, endpoint=endpoint_pattern, method=request.method,
                 allowed=False, reason=func_decision.reason,
+            )
+            alert_manager.raise_alert(
+                violation_type="BFLA",
+                user_id=user_id,
+                context=endpoint_pattern,
+                reason=func_decision.reason,
             )
             return JSONResponse(
                 status_code=403,
@@ -105,6 +128,12 @@ class EnforcementMiddleware(BaseHTTPMiddleware):
                 audit_logger.append(
                     user_id=user_id, endpoint=endpoint_pattern, method=request.method,
                     allowed=False, reason=obj_decision.reason,
+                )
+                alert_manager.raise_alert(
+                    violation_type="BOLA",
+                    user_id=user_id,
+                    context=f"{endpoint_pattern} object_id={object_id}",
+                    reason=obj_decision.reason,
                 )
                 return JSONResponse(
                     status_code=403,
@@ -124,15 +153,12 @@ class EnforcementMiddleware(BaseHTTPMiddleware):
         and extracts the object_id (1001).
         Returns (endpoint_pattern, object_id_or_None).
         """
-        # Pattern for /api/orders/{id}
         orders_match = re.match(r"^/api/orders/(?P<id>[^/]+)$", path)
         if orders_match:
             return "/api/orders/{id}", orders_match.group("id")
 
-        # Static endpoints with no object_id
         static_endpoints = {"/api/products", "/api/admin/users", "/api/admin/refund", "/health"}
         if path in static_endpoints:
             return path, None
 
-        # Unknown endpoint
         return path, None
