@@ -106,6 +106,21 @@ class AlertManager:
     def count(self) -> int:
         return len(self._alerts)
 
+    def get_stats(self) -> dict:
+        """
+        Summary stats for the admin dashboard: total alert count, a
+        breakdown by violation type, and the 5 most recent alerts.
+        """
+        by_type: dict[str, int] = {}
+        for a in self._alerts:
+            by_type[a.violation_type] = by_type.get(a.violation_type, 0) + 1
+
+        return {
+            "total_alerts": len(self._alerts),
+            "by_violation_type": by_type,
+            "recent_alerts": [a.to_dict() for a in self.get_recent_alerts(limit=5)],
+        }
+
     def _write_to_log(self, alert: Alert) -> None:
         with self.log_path.open("a", encoding="utf-8") as f:
             f.write(alert.to_json() + "\n")
