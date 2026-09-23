@@ -6,7 +6,9 @@ runs all checks in sequence (IP rate limit, volume rate limit, flow rate
 limit, BFLA, BOLA), and blocks with appropriate HTTP status codes if
 anything fails.
 
-Every block triggers an alert that goes to the dashboard.
+Every block triggers an alert (logged + optionally sent to a webhook) and
+is recorded to the audit log. Every request, allowed or blocked, is
+recorded to the audit log. (feat: raise alerts automatically on every middleware block)
 """
 from __future__ import annotations
 
@@ -19,7 +21,12 @@ from starlette.responses import JSONResponse
 from .rate_limiter import RequestRateLimiter, BusinessFlowLimiter, IPRateLimiter
 from app.alerts import alert_manager 78fb4b4 (chore: remove debug print statements)
 from .authorization import AuthorizationEnforcer, Role
+<<<<<<< HEAD
 from .rate_limiter import BusinessFlowLimiter, RequestRateLimiter
+=======
+from .audit import audit_logger
+from .alerts import alert_manager
+>>>>>>> b1dfdfb (feat: raise alerts automatically on every middleware block)
 
 
 class EnforcementMiddleware(BaseHTTPMiddleware):
@@ -56,9 +63,6 @@ class EnforcementMiddleware(BaseHTTPMiddleware):
         endpoint_pattern, object_id = self._match_pattern(request.url.path)
 
         # 0. IP rate limit - only for anonymous/unauthenticated traffic.
-        # Authenticated users are already covered by the per-user volume
-        # limiter below, so this specifically closes the gap where an
-        # attacker omits or rotates X-User-Id to dodge that limiter.
         if user_id == "anonymous":
             client_ip = request.client.host if request.client else "unknown"
             ip_decision = self.ip_limiter.check(client_ip, endpoint_pattern)
@@ -66,6 +70,12 @@ class EnforcementMiddleware(BaseHTTPMiddleware):
                 audit_logger.append(
                     user_id=user_id, endpoint=endpoint_pattern, method=request.method,
                     allowed=False, reason=ip_decision.reason,
+                )
+                alert_manager.raise_alert(
+                    violation_type="RATE_LIMIT",
+                    user_id=f"ip:{client_ip}",
+                    context=endpoint_pattern,
+                    reason=ip_decision.reason,
                 )
                 return JSONResponse(
                     status_code=429,
@@ -81,7 +91,16 @@ class EnforcementMiddleware(BaseHTTPMiddleware):
                 context=f"endpoint={endpoint_pattern}",
                 reason=rl_decision.reason,
             )
+<<<<<<< HEAD
 
+=======
+            alert_manager.raise_alert(
+                violation_type="RATE_LIMIT",
+                user_id=user_id,
+                context=endpoint_pattern,
+                reason=rl_decision.reason,
+            )
+>>>>>>> b1dfdfb (feat: raise alerts automatically on every middleware block)
             return JSONResponse(
                 status_code=429,
                 content={"blocked": True, "reason": rl_decision.reason},
@@ -97,11 +116,27 @@ class EnforcementMiddleware(BaseHTTPMiddleware):
             )
 >>>>>>> 78fb4b4 (chore: remove debug print statements)
             if not flow_decision.allowed:
+<<<<<<< HEAD
                 alert_manager.raise_alert(
                   violation_type="RATE_LIMIT",
                   user_id=user_id,
                   context=f"endpoint={endpoint_pattern}, object_id={object_id}",
                   reason=flow_decision.reason,
+=======
+                audit_logger.append(
+                    user_id=user_id, endpoint=endpoint_pattern, method=request.method,
+                    allowed=False, reason=flow_decision.reason,
+                )
+                alert_manager.raise_alert(
+                    violation_type="RATE_LIMIT",
+                    user_id=user_id,
+                    context=f"{endpoint_pattern} object_id={object_id}",
+                    reason=flow_decision.reason,
+                )
+                return JSONResponse(
+                    status_code=429,
+                    content={"blocked": True, "reason": flow_decision.reason},
+>>>>>>> b1dfdfb (feat: raise alerts automatically on every middleware block)
                 )
                 
             return JSONResponse(
@@ -112,11 +147,27 @@ class EnforcementMiddleware(BaseHTTPMiddleware):
         # 3. Function-level authorization (BFLA)
         func_decision = self.authorizer.check_function_level(role, endpoint_pattern)
         if not func_decision.allowed:
+<<<<<<< HEAD
             alert_manager.raise_alert(
                violation_type="BFLA",
                user_id=user_id,
                context=f"endpoint={endpoint_pattern}, role={role}",
                reason=func_decision.reason,
+=======
+            audit_logger.append(
+                user_id=user_id, endpoint=endpoint_pattern, method=request.method,
+                allowed=False, reason=func_decision.reason,
+            )
+            alert_manager.raise_alert(
+                violation_type="BFLA",
+                user_id=user_id,
+                context=endpoint_pattern,
+                reason=func_decision.reason,
+            )
+            return JSONResponse(
+                status_code=403,
+                content={"blocked": True, "reason": func_decision.reason},
+>>>>>>> b1dfdfb (feat: raise alerts automatically on every middleware block)
             )
             
         return JSONResponse(
@@ -128,11 +179,27 @@ class EnforcementMiddleware(BaseHTTPMiddleware):
         if object_id is not None:
             obj_decision = self.authorizer.check_object_level(user_id, object_id)
             if not obj_decision.allowed:
+<<<<<<< HEAD
                 alert_manager.raise_alert(
                    violation_type="BOLA",
                    user_id=user_id,
                    context=f"object_id={object_id}",
                    reason=obj_decision.reason,
+=======
+                audit_logger.append(
+                    user_id=user_id, endpoint=endpoint_pattern, method=request.method,
+                    allowed=False, reason=obj_decision.reason,
+                )
+                alert_manager.raise_alert(
+                    violation_type="BOLA",
+                    user_id=user_id,
+                    context=f"{endpoint_pattern} object_id={object_id}",
+                    reason=obj_decision.reason,
+                )
+                return JSONResponse(
+                    status_code=403,
+                    content={"blocked": True, "reason": obj_decision.reason},
+>>>>>>> b1dfdfb (feat: raise alerts automatically on every middleware block)
                 )
                 
             return JSONResponse(
@@ -149,13 +216,16 @@ class EnforcementMiddleware(BaseHTTPMiddleware):
         and extracts the object_id (1001).
         Returns (endpoint_pattern, object_id_or_None).
         """
-        # Pattern for /api/orders/{id}
         orders_match = re.match(r"^/api/orders/(?P<id>[^/]+)$", path)
         if orders_match:
             return "/api/orders/{id}", orders_match.group("id")
+<<<<<<< HEAD
         
         # Static endpoints with no object_id
 <<<<<<< HEAD
+=======
+
+>>>>>>> b1dfdfb (feat: raise alerts automatically on every middleware block)
         static_endpoints = {"/api/products", "/api/admin/users", "/api/admin/refund", "/health"}
 =======
         static_endpoints = {
@@ -167,6 +237,11 @@ class EnforcementMiddleware(BaseHTTPMiddleware):
 >>>>>>> 78fb4b4 (chore: remove debug print statements)
         if path in static_endpoints:
             return path, None
+<<<<<<< HEAD
         
         # Unknown endpoint
         return path, None
+=======
+
+        return path, None
+>>>>>>> b1dfdfb (feat: raise alerts automatically on every middleware block)
