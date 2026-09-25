@@ -10,8 +10,13 @@ Run with: uvicorn app.main:app --reload --port 8000
 Then test with curl or the attack simulation scripts.
 """
 
-from fastapi import FastAPI
+from typing import Optional
+
+from fastapi import FastAPI, Query
+
 from .blocking_middleware import EnforcementMiddleware
+from .audit import audit_logger
+from .alerts import alert_manager
 
 app = FastAPI(title="API-Sentinel Enforcement Demo")
 app.add_middleware(EnforcementMiddleware)
@@ -47,3 +52,55 @@ def create_user():
 @app.post("/api/admin/refund")
 def issue_refund():
     return {"status": "refund issued", "note": "admin endpoint"}
+
+
+@app.get("/api/admin/audit")
+def get_audit_log(
+    user_id: Optional[str] = Query(default=None),
+    allowed: Optional[bool] = Query(default=None),
+    limit: int = Query(default=50, ge=1, le=500),
+):
+    """
+    Query the audit log. Filters:
+      - user_id: only entries for this user
+      - allowed: true = only allowed requests, false = only blocked requests
+      - limit: max entries to return (default 50, max 500)
+    """
+    entries = audit_logger.query(user_id=user_id, allowed=allowed, limit=limit)
+
+    return {
+        "count": len(entries),
+        "entries": [
+            {
+                "timestamp": e.timestamp,
+                "user_id": e.user_id,
+                "endpoint": e.endpoint,
+                "method": e.method,
+                "allowed": e.allowed,
+                "reason": e.reason,
+            }
+            for e in entries
+        ],
+    }
+
+
+@app.get("/api/admin/stats")
+def get_stats():
+    """
+    Summary stats for the admin dashboard: alert counts by violation
+    type, recent alerts, and audit log totals (allowed vs blocked).
+    """
+    alert_stats = alert_manager.get_stats()
+
+    total_requests = len(audit_logger.query(limit=100000))
+    blocked_requests = len(audit_logger.query(allowed=False, limit=100000))
+    allowed_requests = total_requests - blocked_requests
+
+    return {
+        "alerts": alert_stats,
+        "requests": {
+            "total": total_requests,
+            "allowed": allowed_requests,
+            "blocked": blocked_requests,
+        },
+    }

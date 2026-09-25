@@ -41,6 +41,7 @@ MOCK_ENDPOINT_ROLES = {
     "/api/admin/users": {Role.ADMIN},
     "/api/admin/refund": {Role.ADMIN},
     "/api/products": {Role.USER, Role.ADMIN},
+    "/api/admin/stats": {Role.ADMIN},
 }
 
 class AuthorizationEnforcer:
