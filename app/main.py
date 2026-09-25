@@ -15,6 +15,7 @@ from typing import Optional
 from fastapi import FastAPI, Query
 from .blocking_middleware import EnforcementMiddleware
 from .audit import audit_logger
+from .alerts import alert_manager
 
 app = FastAPI(title="API-Sentinel Enforcement Demo")
 app.add_middleware(EnforcementMiddleware)
@@ -78,4 +79,26 @@ def get_audit_log(
             }
             for e in entries
         ],
+    }
+
+
+@app.get("/api/admin/stats")
+def get_stats():
+    """
+    Summary stats for the admin dashboard: alert counts by violation
+    type, recent alerts, and audit log totals (allowed vs blocked).
+    """
+    alert_stats = alert_manager.get_stats()
+
+    total_requests = len(audit_logger.query(limit=100000))
+    blocked_requests = len(audit_logger.query(allowed=False, limit=100000))
+    allowed_requests = total_requests - blocked_requests
+
+    return {
+        "alerts": alert_stats,
+        "requests": {
+            "total": total_requests,
+            "allowed": allowed_requests,
+            "blocked": blocked_requests,
+        },
     }

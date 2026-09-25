@@ -42,6 +42,7 @@ MOCK_ENDPOINT_ROLES = {
     "/api/admin/refund": {Role.ADMIN},
     "/api/admin/audit": {Role.ADMIN},
     "/api/products": {Role.USER, Role.ADMIN},
+    "/api/admin/stats": {Role.ADMIN},
 }
 
 
