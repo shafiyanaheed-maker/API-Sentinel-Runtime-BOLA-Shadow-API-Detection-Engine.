@@ -13,9 +13,13 @@ Then test with curl or the attack simulation scripts.
 from typing import Optional
 
 from fastapi import FastAPI, Query
+from pydantic import BaseModel
+from starlette.responses import JSONResponse
+
 from .blocking_middleware import EnforcementMiddleware
 from .audit import audit_logger
 from .alerts import alert_manager
+from .access_control import access_control
 
 app = FastAPI(title="API-Sentinel Enforcement Demo")
 app.add_middleware(EnforcementMiddleware)
@@ -102,3 +106,70 @@ def get_stats():
             "blocked": blocked_requests,
         },
     }
+
+
+class AccessControlRequest(BaseModel):
+    entity_type: str  # "user" or "ip"
+    value: str
+
+
+@app.get("/api/admin/access-control")
+def get_access_control_lists():
+    """Current allowlist/blocklist contents."""
+    return access_control.snapshot()
+
+
+@app.post("/api/admin/blocklist")
+def add_to_blocklist(body: AccessControlRequest):
+    if body.entity_type == "user":
+        access_control.block_user(body.value)
+    elif body.entity_type == "ip":
+        access_control.block_ip(body.value)
+    else:
+        return JSONResponse(
+            status_code=400,
+            content={"error": "entity_type must be 'user' or 'ip'"},
+        )
+    return {"status": "blocked", "entity_type": body.entity_type, "value": body.value}
+
+
+@app.delete("/api/admin/blocklist")
+def remove_from_blocklist(body: AccessControlRequest):
+    if body.entity_type == "user":
+        access_control.unblock_user(body.value)
+    elif body.entity_type == "ip":
+        access_control.unblock_ip(body.value)
+    else:
+        return JSONResponse(
+            status_code=400,
+            content={"error": "entity_type must be 'user' or 'ip'"},
+        )
+    return {"status": "unblocked", "entity_type": body.entity_type, "value": body.value}
+
+
+@app.post("/api/admin/allowlist")
+def add_to_allowlist(body: AccessControlRequest):
+    if body.entity_type == "user":
+        access_control.allow_user(body.value)
+    elif body.entity_type == "ip":
+        access_control.allow_ip(body.value)
+    else:
+        return JSONResponse(
+            status_code=400,
+            content={"error": "entity_type must be 'user' or 'ip'"},
+        )
+    return {"status": "allowed", "entity_type": body.entity_type, "value": body.value}
+
+
+@app.delete("/api/admin/allowlist")
+def remove_from_allowlist(body: AccessControlRequest):
+    if body.entity_type == "user":
+        access_control.unallow_user(body.value)
+    elif body.entity_type == "ip":
+        access_control.unallow_ip(body.value)
+    else:
+        return JSONResponse(
+            status_code=400,
+            content={"error": "entity_type must be 'user' or 'ip'"},
+        )
+    return {"status": "unallowed", "entity_type": body.entity_type, "value": body.value}
