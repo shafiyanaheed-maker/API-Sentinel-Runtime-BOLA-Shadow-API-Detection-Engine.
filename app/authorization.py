@@ -19,6 +19,7 @@ class Role(str, Enum):
     USER = "user"
     ADMIN = "admin"
 
+
 @dataclass
 class AuthDecision:
     allowed: bool
@@ -35,13 +36,18 @@ MOCK_ORDER_OWNERSHIP = {
     "1005": "user_c",
 }
 
-# Mock data: endpoint pattern -> set of roles allowed to call it
 MOCK_ENDPOINT_ROLES = {
     "/api/orders/{id}": {Role.USER, Role.ADMIN},
     "/api/admin/users": {Role.ADMIN},
     "/api/admin/refund": {Role.ADMIN},
+    "/api/admin/audit": {Role.ADMIN},
     "/api/products": {Role.USER, Role.ADMIN},
+    "/api/admin/stats": {Role.ADMIN},
+    "/api/admin/access-control": {Role.ADMIN},
+    "/api/admin/blocklist": {Role.ADMIN},
+    "/api/admin/allowlist": {Role.ADMIN},
 }
+
 
 class AuthorizationEnforcer:
     def __init__(self,
@@ -76,7 +82,7 @@ class AuthorizationEnforcer:
             violation_type=None,
             reason="owner match",
         )
-        
+
     def check_function_level(self, role: Role, endpoint_pattern: str) -> AuthDecision:
         allowed_roles = self.role_map.get(endpoint_pattern)
 

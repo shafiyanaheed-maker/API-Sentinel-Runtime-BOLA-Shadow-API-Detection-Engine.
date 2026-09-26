@@ -150,7 +150,7 @@ def attack_traffic():
     cases.append(
         {
             "label": 1,
-        "desc": "user_c BFLA on /admin/refund",
+            "desc": "user_c BFLA on /admin/refund",
             "status": r.status_code,
             "blocked": r.status_code in (403, 429),
         }
