@@ -24,6 +24,7 @@ SEVERITY_MAP = {
     "BOLA": "HIGH",
     "BFLA": "HIGH",
     "RATE_LIMIT": "MEDIUM",
+    "BLOCKLIST": "HIGH",
 }
 
 DEFAULT_LOG_PATH = Path("alerts.log")

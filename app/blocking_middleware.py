@@ -2,9 +2,9 @@
 blocking_middleware.py
 
 The enforcement middleware: sits between incoming requests and route handlers,
-runs all checks in sequence (IP rate limit, volume rate limit, flow rate
-limit, BFLA, BOLA), and blocks with appropriate HTTP status codes if
-anything fails.
+runs all checks in sequence (allowlist/blocklist, IP rate limit, volume
+rate limit, flow rate limit, BFLA, BOLA), and blocks with appropriate HTTP
+status codes if anything fails.
 
 Every block triggers an alert (logged + optionally sent to a webhook) and
 is recorded to the audit log. Every request, allowed or blocked, is
@@ -21,6 +21,7 @@ from .rate_limiter import RequestRateLimiter, BusinessFlowLimiter, IPRateLimiter
 from .authorization import AuthorizationEnforcer, Role
 from .audit import audit_logger
 from .alerts import alert_manager
+from .access_control import access_control
 
 
 class EnforcementMiddleware(BaseHTTPMiddleware):
@@ -46,9 +47,37 @@ class EnforcementMiddleware(BaseHTTPMiddleware):
 
         endpoint_pattern, object_id = self._match_pattern(request.url.path)
 
+        # -1. Access control (allowlist/blocklist) - checked before
+        # everything else. Blocklisted entities are rejected immediately;
+        # allowlisted entities skip every other check.
+        client_ip = request.client.host if request.client else "unknown"
+        access_decision = access_control.check(user_id, client_ip)
+
+        if access_decision.matched and access_decision.listed_as == "blocked":
+            audit_logger.append(
+                user_id=user_id, endpoint=endpoint_pattern, method=request.method,
+                allowed=False, reason=access_decision.reason,
+            )
+            alert_manager.raise_alert(
+                violation_type="BLOCKLIST",
+                user_id=user_id,
+                context=endpoint_pattern,
+                reason=access_decision.reason,
+            )
+            return JSONResponse(
+                status_code=403,
+                content={"blocked": True, "reason": access_decision.reason},
+            )
+
+        if access_decision.matched and access_decision.listed_as == "allowed":
+            audit_logger.append(
+                user_id=user_id, endpoint=endpoint_pattern, method=request.method,
+                allowed=True, reason=access_decision.reason,
+            )
+            return await call_next(request)
+
         # 0. IP rate limit - only for anonymous/unauthenticated traffic.
         if user_id == "anonymous":
-            client_ip = request.client.host if request.client else "unknown"
             ip_decision = self.ip_limiter.check(client_ip, endpoint_pattern)
             if not ip_decision.allowed:
                 audit_logger.append(
