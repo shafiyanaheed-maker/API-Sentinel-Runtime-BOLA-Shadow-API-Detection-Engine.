@@ -23,8 +23,10 @@ def burst_flood(attacker="user_c", n=30):
     print(f"\n=== Burst flood simulation (attacker='{attacker}', n={n}) ===")
     blocked = 0
     for i in range(n):
-        resp = requests.get(f"{HOST}/api/products",
-                             headers={"X-User-Id": attacker, "X-User-Role": "user"})
+        resp = requests.get(
+            f"{HOST}/api/products",
+            headers={"X-User-Id": attacker, "X-User-Role": "user"},
+        )
         if resp.status_code == 429:
             blocked += 1
     print(f"  {blocked}/{n} requests blocked by volume rate limit.")
@@ -35,8 +37,10 @@ def slow_scan(attacker="user_a", n=8, delay=0.5):
     print(f"\n=== Slow object-scan simulation (attacker='{attacker}', n={n}) ===")
     blocked = 0
     for order_id in range(1001, 1001 + n):
-        resp = requests.get(f"{HOST}/api/orders/{order_id}",
-                             headers={"X-User-Id": attacker, "X-User-Role": "user"})
+        resp = requests.get(
+            f"{HOST}/api/orders/{order_id}",
+            headers={"X-User-Id": attacker, "X-User-Role": "user"},
+        )
         status = "BLOCKED" if resp.status_code in (403, 429) else "allowed"
         if status == "BLOCKED":
             blocked += 1
